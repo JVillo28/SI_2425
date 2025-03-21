@@ -1,10 +1,21 @@
 /* Initial goals */
+pauta(paracetamol, 8). //paracetamol
+pauta(ibuprofeno, 8). //ibuprofeno
+pauta(dalsy, 4). // dalsy
+pauta(frenadol, 6). //frenadol
+pauta(aspirina, 8). //aspirina
 
+!send_pauta.
 !get(beer).   // initial goal: get a beer
 !check_bored. // initial goal: verify whether I am getting bored
 
-!go_ar(owner,robot).
-!go_at(owner,kit).
+
++!send_pauta : true  <-
+.findall(pauta(X,Y), pauta(X,Y), L);
+.print("Mi pauta: ", L);
+.send(robot, tell, L).
+
+
 
 +!get(beer) : true
    <- .send(robot, achieve, bring(owner,beer)).
@@ -30,6 +41,7 @@
 +msg(M)[source(Ag)] : true
    <- .print("Message from ",Ag,": ",M);
       -msg(M).
+
 
 
 +!go_at(owner,P) : not at(owner,P)
