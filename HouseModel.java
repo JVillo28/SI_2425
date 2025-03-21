@@ -12,7 +12,7 @@ public class HouseModel extends GridWorldModel {
 	public static final int NURSE  			=    0;
     public static final int OWNER  			=    1;
     public static final int SUPERMARKET  	=    2;
-	
+
 	// constants for the grid objects
 
     public static final int COLUMN  =    4;
@@ -20,21 +20,22 @@ public class HouseModel extends GridWorldModel {
     public static final int SOFA  	=   16;
     public static final int FRIDGE 	=   32;
     public static final int WASHER 	=   64;
-	public static final int DOOR 	=  128;                                       
+	public static final int DOOR 	=  128;
 	public static final int CHARGER =  256;
     public static final int TABLE  	=  512;
     public static final int BED	   	= 1024;
 	public static final int KIT		= 2048; //Es en potencias porque se esta trabajando con bitmap
 	//public static final int DELIVERY, es el que ya viene implementado por almacén, pero yo cree una nueva
 
+	public static int[] mobiliarioSentable = {CHAIR,SOFA,BED};
 
-    // the grid size                                                     
+    // the grid size
     public static final int GSize = 12;     //Cells
 	public final int GridSize = 1080;    	//Width
 
-	
-                          
-    boolean fridgeOpen   = false; 	// whether the fridge is open                                   
+
+
+    boolean fridgeOpen   = false; 	// whether the fridge is open
     boolean carryingBeer = false; 	// whether the robot is carrying beer
     int sipCount        = 0; 		// how many sip the owner did, nos indica tambien si el owner tiene la cerveza en la mano, si aún le quedan sorbos (<10) pues aún la tiene en la mano
     int availableBeers  = 2; 		// how many beers are available
@@ -55,15 +56,15 @@ public class HouseModel extends GridWorldModel {
 	int disponibleFrenadol = 5;
 	int disponibleAspirina = 5;
 
-    
-	// Initialization of the objects Location on the domotic home scene 
+
+	// Initialization of the objects Location on the domotic home scene
     Location lSofa	 	= new Location(GSize/2, GSize-2);
     Location lChair1  	= new Location(GSize/2+2, GSize-3);
     Location lChair3 	= new Location(GSize/2-1, GSize-3);
-    Location lChair2 	= new Location(GSize/2+1, GSize-4); 
-    Location lChair4 	= new Location(GSize/2, GSize-4); 
+    Location lChair2 	= new Location(GSize/2+1, GSize-4);
+    Location lChair4 	= new Location(GSize/2, GSize-4);
     Location lDeliver 	= new Location(0, GSize-1);
-    Location lWasher 	= new Location(GSize/3, 0);	
+    Location lWasher 	= new Location(GSize/3, 0);
     Location lFridge 	= new Location(2, 0);
 
 	Location lKit 		= new Location(0, 0);
@@ -73,19 +74,19 @@ public class HouseModel extends GridWorldModel {
 	Location lBed3		= new Location(GSize*2-3,0);
 	Location lBed1		= new Location(GSize+1, GSize*3/4);
 
-	// Initialization of the doors location on the domotic home scene 
-	Location lDoorHall 		= new Location(0, GSize-1);  
+	// Initialization of the doors location on the domotic home scene
+	Location lDoorHall 		= new Location(0, GSize-1);
 	Location lDoorKit_Hall	= new Location(0, GSize/2);
-	Location lDoorKit_HW	= new Location(GSize/2+1, GSize/2-1); 
-	Location lDoorLivi_Hall	= new Location(GSize/4, GSize-1);  
+	Location lDoorKit_HW	= new Location(GSize/2+1, GSize/2-1);
+	Location lDoorLivi_Hall	= new Location(GSize/4, GSize-1);
 	Location lDoorLivi_HW	= new Location(GSize/2+2, GSize/2);
 	Location lDoorBed_P		= new Location(GSize+1, GSize/2);
 	Location lDoorBed_I1	= new Location(GSize+1, GSize/4+1);
 	Location lDoorBed_I2	= new Location(GSize*2-1, GSize/4+1);
-	Location lDoorBath_BedP	= new Location(GSize*2-4, GSize/2+1); 	 	 	
+	Location lDoorBath_BedP	= new Location(GSize*2-4, GSize/2+1);
 	Location lDoorBath_HW	= new Location(GSize-1, GSize/4+1);
-	
-	// Initialization of the area modeling the home rooms      
+
+	// Initialization of the area modeling the home rooms
 	Area kitchen 	= new Area(0, 0, GSize/2+1, GSize/2-1);
 	Area livingroom	= new Area(GSize/3, GSize/2+1, GSize, GSize-1);
 	Area bathHW	 	= new Area(GSize/2+2, 0, GSize-1, GSize/3);
@@ -102,26 +103,26 @@ public class HouseModel extends GridWorldModel {
 	Crear un método para la identificación del tipo de agente existente
 	Identificar objetos globales que precisen de un único identificador
 	*/
-	
+
     public HouseModel() {
         // create a GSize x 2GSize grid with 3 mobile agent
         super(2*GSize, GSize, 2);
-                                                                           
+
         // Initial location for the owner and the nurse
-        setAgPos(NURSE, 2, 4);  
+        setAgPos(NURSE, 2, 4);
 		setAgPos(OWNER, GSize/2+2, GSize-3);
 
 		// Location of the furniture of the house
-        add(FRIDGE, lFridge); 
-		add(KIT, lKit); 
-		add(WASHER, lWasher); 
-		add(DOOR,   lDeliver); 
+        add(FRIDGE, lFridge);
+		add(KIT, lKit);
+		add(WASHER, lWasher);
+		add(DOOR,   lDeliver);
 		add(SOFA,   lSofa);
 		add(CHAIR,  lChair2);
 		add(CHAIR,  lChair3);
 		add(CHAIR,  lChair4);
-        add(CHAIR,  lChair1);  
-        add(TABLE,  lTable);  
+        add(CHAIR,  lChair1);
+        add(TABLE,  lTable);
 		add(BED,	lBed1);
 		add(BED,	lBed2);
 		add(BED,	lBed3);
@@ -139,23 +140,23 @@ public class HouseModel extends GridWorldModel {
 		add(DOOR, lDoorBath_HW);
 
 		//Location of walls
-		addWall(GSize/2+1, 0, GSize/2+1, GSize/2-2);  		
-		addWall(GSize/2+1, GSize/4+1, GSize-2, GSize/4+1);   
-		addWall(GSize+2, GSize/4+1, GSize*2-2, GSize/4+1);   
+		addWall(GSize/2+1, 0, GSize/2+1, GSize/2-2);
+		addWall(GSize/2+1, GSize/4+1, GSize-2, GSize/4+1);
+		addWall(GSize+2, GSize/4+1, GSize*2-2, GSize/4+1);
 		addWall(GSize*2-6, 0, GSize*2-6, GSize/4);
-		addWall(GSize, 0, GSize, GSize/4+1);  
-		addWall(1, GSize/2, GSize/2+1, GSize/2);            
-		addWall(GSize/4, GSize/2+1, GSize/4, GSize-2);            
-		addWall(GSize, GSize/2, GSize, GSize-1);  
-		addWall(GSize*2-4, GSize/2+2, GSize*2-4, GSize-1);  
-		addWall(GSize/2+3, GSize/2, GSize*2-1, GSize/2);  
- 		
-		 
-     }
-	
+		addWall(GSize, 0, GSize, GSize/4+1);
+		addWall(1, GSize/2, GSize/2+1, GSize/2);
+		addWall(GSize/4, GSize/2+1, GSize/4, GSize-2);
+		addWall(GSize, GSize/2, GSize, GSize-1);
+		addWall(GSize*2-4, GSize/2+2, GSize*2-4, GSize-1);
+		addWall(GSize/2+3, GSize/2, GSize*2-1, GSize/2);
 
-	 String getRoom (Location thing){  
-		
+
+     }
+
+
+	 String getRoom (Location thing){
+
 		String byDefault = "kitchen";
 
 		if (bathHW.contains(thing)){
@@ -185,7 +186,7 @@ public class HouseModel extends GridWorldModel {
 		return byDefault;
 	}
 
-	boolean sit(int Ag, Location dest) { 
+	boolean sit(int Ag, Location dest) {
 		Location loc = getAgPos(Ag);
 		if (loc.isNeigbour(dest)) {
 			setAgPos(Ag, dest);
@@ -209,8 +210,8 @@ public class HouseModel extends GridWorldModel {
         } else {
             return false;
         }
-    }  
-	
+    }
+
 	boolean abrirKit() {
         if (!kitAbierto) {
             kitAbierto = true;
@@ -227,18 +228,18 @@ public class HouseModel extends GridWorldModel {
         } else {
             return false;
         }
-    } 
+    }
 
 	boolean canMoveTo (int Ag, int x, int y) {
 		if (Ag == NURSE) {
 			return (isFree(x,y) && !hasObject(WASHER,x,y) && !hasObject(TABLE,x,y) &&
 		           !hasObject(SOFA,x,y) && !hasObject(CHAIR,x,y));
-		} else { 
-			
+		} else {
+
 			return (isFree(x,y) && !hasObject(WASHER,x,y) && !hasObject(TABLE,x,y));
 		}
 	}
-	
+
 	boolean moveTowards(int Ag, Location dest){
 		Location posicionAgente = getAgPos(Ag);
 		Location posicionAntigua = getAgPos(Ag);
@@ -255,7 +256,7 @@ public class HouseModel extends GridWorldModel {
 					posicionAgente.x--;
 				} else if (posicionAgente.y < dest.y && posicionAgente.distance(dest)>0 && canMoveTo(Ag,posicionAgente.x,posicionAgente.y+1)) {
 					posicionAgente.y++;
-				} else if (posicionAgente.y > dest.y && posicionAgente.distance(dest)>0 && canMoveTo(Ag,posicionAgente.x,posicionAgente.y-1)) {  
+				} else if (posicionAgente.y > dest.y && posicionAgente.distance(dest)>0 && canMoveTo(Ag,posicionAgente.x,posicionAgente.y-1)) {
 					posicionAgente.y--;
 				}
 			}
@@ -269,7 +270,7 @@ public class HouseModel extends GridWorldModel {
 					posicionAgente.x--;
 				} else if (posicionAgente.y < puertaSiguiente.y && posicionAgente.distance(puertaSiguiente)>0 && canMoveTo(Ag,posicionAgente.x,posicionAgente.y+1)) {
 					posicionAgente.y++;
-				} else if (posicionAgente.y > puertaSiguiente.y && posicionAgente.distance(puertaSiguiente)>0 && canMoveTo(Ag,posicionAgente.x,posicionAgente.y-1)) {  
+				} else if (posicionAgente.y > puertaSiguiente.y && posicionAgente.distance(puertaSiguiente)>0 && canMoveTo(Ag,posicionAgente.x,posicionAgente.y-1)) {
 					posicionAgente.y--;
 				}
 
@@ -288,14 +289,14 @@ public class HouseModel extends GridWorldModel {
 				} else if (canMoveTo(Ag,arriba.x,arriba.y+1) && habitacionActual != getRoom(arriba)) {
 					posicionAgente.y++;
 					habitacionActual = getRoom(arriba);
-				} else if (canMoveTo(Ag,abajo.x,abajo.y-1) && habitacionActual != getRoom(abajo)) {  
+				} else if (canMoveTo(Ag,abajo.x,abajo.y-1) && habitacionActual != getRoom(abajo)) {
 					posicionAgente.y--;
 					habitacionActual = getRoom(abajo);
 				}
 			}
 		}
 		if (posicionAgente.equals(posicionAntigua) && posicionAgente.distance(dest) > 0) {
-			
+
 			//SI NO SE PUEDE MOVER A ABAJO
 			if (!canMoveTo(Ag, posicionAgente.x, posicionAgente.y-1) & canMoveTo(Ag, posicionAgente.x+1, posicionAgente.y)) {
 				posicionAgente.x++; // Intentar moverse derecha
@@ -303,19 +304,19 @@ public class HouseModel extends GridWorldModel {
 				posicionAgente.x--; // Intentar moverse izquierda
 			}
 			//SI NO SE PUEDE MOVER A ARRIBA
-			if (!canMoveTo(Ag, posicionAgente.x, posicionAgente.y+1) & canMoveTo(Ag, posicionAgente.x+1, posicionAgente.y)) {
+			else if (!canMoveTo(Ag, posicionAgente.x, posicionAgente.y+1) & canMoveTo(Ag, posicionAgente.x+1, posicionAgente.y)) {
 				posicionAgente.x++; // Intentar moverse derecha
 			}else if(!canMoveTo(Ag, posicionAgente.x, posicionAgente.y+1) & canMoveTo(Ag, posicionAgente.x-1, posicionAgente.y)) {
 				posicionAgente.x--; // Intentar moverse izquierda
 			}
 			//SI NO SE PUEDE MOVER A LA DERECHA
-			if (!canMoveTo(Ag, posicionAgente.x+1, posicionAgente.y) & canMoveTo(Ag, posicionAgente.x, posicionAgente.y+1)) {
+			else if (!canMoveTo(Ag, posicionAgente.x+1, posicionAgente.y) & canMoveTo(Ag, posicionAgente.x, posicionAgente.y+1)) {
 				posicionAgente.y++; // Intentar moverse arriba
 			}else if (!canMoveTo(Ag, posicionAgente.x+1, posicionAgente.y) & canMoveTo(Ag, posicionAgente.x, posicionAgente.y-1)) {
 				posicionAgente.y--; // Intentar moverse abajo
 			}
 			//SI NO SE PUEDE MOVER A LA IZQUIERDA
-			if (!canMoveTo(Ag, posicionAgente.x-1, posicionAgente.y) & canMoveTo(Ag, posicionAgente.x, posicionAgente.y+1)) {
+			else if (!canMoveTo(Ag, posicionAgente.x-1, posicionAgente.y) & canMoveTo(Ag, posicionAgente.x, posicionAgente.y+1)) {
 				posicionAgente.y++; // Intentar moverse arriba
 			}else if (!canMoveTo(Ag, posicionAgente.x-1, posicionAgente.y) & canMoveTo(Ag, posicionAgente.x, posicionAgente.y-1)) {
 				posicionAgente.y--; // Intentar moverse abajo
@@ -324,15 +325,15 @@ public class HouseModel extends GridWorldModel {
 		setAgPos(Ag, posicionAgente);
 
 		return true;
-	}          
+	}
 
 	Location mejorPuerta(int Ag, Location dest) {
 		Location posicionAgente = getAgPos(Ag);
 		String habitacionActual = getRoom(posicionAgente);
 		Location[] puertas;
 
-		
-	
+
+
 		switch (habitacionActual) {
 			case "kitchen":
 				puertas = new Location[]{lDoorKit_Hall, lDoorKit_HW};
@@ -365,10 +366,10 @@ public class HouseModel extends GridWorldModel {
 				puertas = new Location[]{};
 				break;
 		}
-	
+
 		Location mejorPuerta = puertas[0];
 		int menorDistancia = posicionAgente.distance(puertas[0]) + puertas[0].distance(dest);
-	
+
 		for (Location puerta : puertas) {
 			int distancia = posicionAgente.distance(puerta) + puerta.distance(dest);
 			if (distancia < menorDistancia) {
@@ -376,10 +377,10 @@ public class HouseModel extends GridWorldModel {
 				mejorPuerta = puerta;
 			}
 		}
-	
+
 		return mejorPuerta;
 	}
-	
+
     boolean getBeer() {
         if (fridgeOpen && availableBeers > 0 && !carryingBeer) {
             availableBeers--;
@@ -387,18 +388,18 @@ public class HouseModel extends GridWorldModel {
             return true;
         } else if (fridgeOpen && availableBeers < 0 && !carryingBeer){
 			System.out.println("There is no beers in the friedge.");
-			
+
 			return false;
 		}
-		
-		else {  
+
+		else {
 			if (fridgeOpen) {
 				System.out.println("The fridge is opened. ");
 			};
-			if (availableBeers > 0){ 
+			if (availableBeers > 0){
 				System.out.println("The fridge has Beers enough. ");
 			};
-			if (!carryingBeer){ 
+			if (!carryingBeer){
 				System.out.println("The robot is not bringing a Beer. ");
 			};
             return false;
@@ -496,7 +497,7 @@ public class HouseModel extends GridWorldModel {
             } else
                 {
                     return false;
-                }      
+                }
     }
 
     /**
@@ -521,7 +522,7 @@ public class HouseModel extends GridWorldModel {
             } else
                 {
                     return false;
-                }      
+                }
     }
 
 

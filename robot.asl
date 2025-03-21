@@ -1,11 +1,6 @@
-/* Initial beliefs and rules */
-
-// Meciamentos stock
-medicamentos([paracetamol,dalsi,ibuprofeno,frenadol,aspirina]).
 
 
-// initially, I believe that there is some beer in the fridge
-available(beer,fridge).
+
 
 // my owner should not consume more than 10 beers a day :-)
 limit(beer,5).
@@ -25,16 +20,8 @@ too_much(B) :-
       abrir(kit);
       getMedicina(paracetamol);
       cerrar(kit);
-      !go_at(robot,fridge);
-      open(fridge);
-      get(beer);
-      close(fridge);
       !go_at(robot,owner);
-      hand_in(beer);
-      ?has(owner,beer);
-      // remember that another beer has been consumed
-      .date(YY,MM,DD); .time(HH,NN,SS);
-      +consumed(YY,MM,DD,HH,NN,SS,beer).
+      hand_in(beer).
 
 +!bring(owner,beer)[source(owner)]
    :  not available(beer,fridge)
