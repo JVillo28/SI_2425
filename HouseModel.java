@@ -32,7 +32,7 @@ public class HouseModel extends GridWorldModel {
     public static final int BED	   	= 1024;
 	public static final int KIT		= 2048; //Es en potencias porque se esta trabajando con bitmap
 	//public static final int DELIVERY, es el que ya viene implementado por almacén, pero yo cree una nueva
-
+	public static int[] mobiliarioSentable = {CHAIR,SOFA,BED};
 	private Map<Integer, Set<Location>> localizacionesVisitadas = new HashMap<>();
 	//almacena las localizaciones que recorre un agente
 
