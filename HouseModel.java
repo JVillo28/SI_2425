@@ -247,21 +247,6 @@ public class HouseModel extends GridWorldModel {
 		}
 	}
 	
-	boolean moverOwner(){
-		int randomX = (int) (Math.random() * 24);
-    	int randomY = (int) (Math.random() * 12);
-
-		Location destino = new Location (randomX,randomY);
-		while(!canMoveTo(OWNER, destino.x, destino.y)){
-			randomX = (int) (Math.random() * 24);
-        	randomY = (int) (Math.random() * 12);
-        	destino = new Location(randomX, randomY);
-		}
-
-		moveTowards(OWNER, destino);
-		return true;
-	}
-
 	public void añadirLocalizacionVisitada(int Ag, Location loc){
 		Set<Location> visitada = localizacionesVisitadas.get(Ag);
 		if (visitada == null){
@@ -292,159 +277,53 @@ public class HouseModel extends GridWorldModel {
         return loc1.equals(arriba) || loc1.equals(abajo) || loc1.equals(izquierda) || loc1.equals(derecha);
     }
 
-	boolean moveTowards(int Ag, Location dest){
+
+	boolean moveTowards(int Ag, Location dest) {
 		Location posicionAgente = getAgPos(Ag);
 		Location posicionInical = getAgPos(Ag);
-		String habitacionActual = getRoom(posicionAgente);
-		String habitacionAgente = getRoom(posicionAgente);
-		String habitacionDestino = getRoom(dest);
-
-		if(habitacionAgente == habitacionDestino){
-			if (posicionAgente.distance(dest)>0) {
-				if (posicionAgente.x < dest.x && canMoveTo(Ag,posicionAgente.x+1,posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x+1, posicionAgente.y))) {
-					posicionAgente.x++;
-					añadirLocalizacionVisitada(Ag, posicionAgente);
-				} else if (posicionAgente.x > dest.x && canMoveTo(Ag,posicionAgente.x-1,posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x-1, posicionAgente.y))) {
-					posicionAgente.x--;
-					añadirLocalizacionVisitada(Ag, posicionAgente);
-				} else if (posicionAgente.y < dest.y && canMoveTo(Ag,posicionAgente.x,posicionAgente.y+1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y+1))) {
-					posicionAgente.y++;
-					añadirLocalizacionVisitada(Ag, posicionAgente);
-				} else if (posicionAgente.y > dest.y &&  canMoveTo(Ag,posicionAgente.x,posicionAgente.y-1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y-1))) {  
-					posicionAgente.y--;
-					añadirLocalizacionVisitada(Ag, posicionAgente);
-				}
 				
+		
+		if (posicionAgente.distance(dest)>0) {
+			if (posicionAgente.x < dest.x && canMoveTo(Ag,posicionAgente.x+1,posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x+1, posicionAgente.y))) {
+				posicionAgente.x++;
+				añadirLocalizacionVisitada(Ag, posicionAgente);
+			} else if (posicionAgente.x > dest.x && canMoveTo(Ag,posicionAgente.x-1,posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x-1, posicionAgente.y))) {
+				posicionAgente.x--;
+				añadirLocalizacionVisitada(Ag, posicionAgente);
+			} else if (posicionAgente.y < dest.y && canMoveTo(Ag,posicionAgente.x,posicionAgente.y+1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y+1))) {
+				posicionAgente.y++;
+				añadirLocalizacionVisitada(Ag, posicionAgente);
+			} else if (posicionAgente.y > dest.y &&  canMoveTo(Ag,posicionAgente.x,posicionAgente.y-1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y-1))) {  
+				posicionAgente.y--;
+				añadirLocalizacionVisitada(Ag, posicionAgente);
 			}
-			if (posicionAgente.equals(posicionInical) && posicionAgente.distance(dest)>0) { // could not move the agent
-				if (posicionAgente.x == dest.x && canMoveTo(Ag, posicionAgente.x + 1, posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x + 1, posicionAgente.y))) {
-                    posicionAgente.x++;
-					añadirLocalizacionVisitada(Ag, posicionAgente);
-                } else if (posicionAgente.x == dest.x && canMoveTo(Ag, posicionAgente.x - 1, posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x - 1, posicionAgente.y))) {
-                    posicionAgente.x--;
-					añadirLocalizacionVisitada(Ag, posicionAgente);
-                } else if (posicionAgente.y == dest.y && canMoveTo(Ag, posicionAgente.x, posicionAgente.y + 1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y + 1))) {
-                    posicionAgente.y++;
-					añadirLocalizacionVisitada(Ag, posicionAgente);
-                } else if (posicionAgente.y == dest.y && canMoveTo(Ag, posicionAgente.x, posicionAgente.y - 1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y - 1))) {
-                    posicionAgente.y--;
-					añadirLocalizacionVisitada(Ag, posicionAgente);	
-                }
-			}
-		} else{
-			// aqui escogemos que puerta esta más cerca de nuesto destino y avanzamos hacia ella en busca de la habitación destino
-			Location puertaSiguiente = mejorPuerta(Ag, dest);
-			if (posicionAgente.distance(puertaSiguiente)>0) {
-				if (posicionAgente.x < puertaSiguiente.x && canMoveTo(Ag,posicionAgente.x+1,posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x+1, posicionAgente.y))) {
-					posicionAgente.x++;
-					añadirLocalizacionVisitada(Ag, posicionAgente);
-				} else if (posicionAgente.x > puertaSiguiente.x && canMoveTo(Ag,posicionAgente.x-1,posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x-1, posicionAgente.y))) {
-					posicionAgente.x--;
-					añadirLocalizacionVisitada(Ag, posicionAgente);
-				} else if (posicionAgente.y < puertaSiguiente.y && canMoveTo(Ag,posicionAgente.x,posicionAgente.y+1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y+1))) {
-					posicionAgente.y++;
-					añadirLocalizacionVisitada(Ag, posicionAgente);
-				} else if (posicionAgente.y > puertaSiguiente.y && canMoveTo(Ag,posicionAgente.x,posicionAgente.y-1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y-1))) {  
-					posicionAgente.y--;
-					añadirLocalizacionVisitada(Ag, posicionAgente);
-				}
-			}else if (posicionAgente.equals(posicionInical) && posicionAgente.distance(puertaSiguiente)>0) { // could not move the agent
-				if (posicionAgente.x == puertaSiguiente.x && canMoveTo(Ag, posicionAgente.x + 1, posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x + 1, posicionAgente.y))) {
-                    posicionAgente.x++;
-					añadirLocalizacionVisitada(Ag, posicionAgente);
-                } else if (posicionAgente.x == puertaSiguiente.x && canMoveTo(Ag, posicionAgente.x - 1, posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x - 1, posicionAgente.y))) {
-                    posicionAgente.x--;
-					añadirLocalizacionVisitada(Ag, posicionAgente);
-                } else if (posicionAgente.y == puertaSiguiente.y && canMoveTo(Ag, posicionAgente.x, posicionAgente.y + 1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y + 1))) {
-                    posicionAgente.y++;
-					añadirLocalizacionVisitada(Ag, posicionAgente);
-                } else if (posicionAgente.y == puertaSiguiente.y && canMoveTo(Ag, posicionAgente.x, posicionAgente.y - 1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y - 1))) {
-                    posicionAgente.y--;
-					añadirLocalizacionVisitada(Ag, posicionAgente);	
-                }
-
-			} else if(posicionAgente.distance(puertaSiguiente) == 0){
-				Location abajo = new Location(puertaSiguiente.x, puertaSiguiente.y-1);
-				Location arriba = new Location(puertaSiguiente.x, puertaSiguiente.y+1);
-				Location izquierda = new Location(puertaSiguiente.x-1, puertaSiguiente.y);
-				Location derecha = new Location(puertaSiguiente.x+1, puertaSiguiente.y);
-
-				if (canMoveTo(Ag,derecha.x,derecha.y) && habitacionActual != getRoom(derecha)) {
-					posicionAgente.x++;
-					habitacionActual = getRoom(derecha);
-				} else if (canMoveTo(Ag,izquierda.x-1,izquierda.y) && habitacionActual != getRoom(izquierda)) {
-					posicionAgente.x--;
-					habitacionActual = getRoom(izquierda);
-				} else if (canMoveTo(Ag,arriba.x,arriba.y+1) && habitacionActual != getRoom(arriba)) {
-					posicionAgente.y++;
-					habitacionActual = getRoom(arriba);
-				} else if (canMoveTo(Ag,abajo.x,abajo.y-1) && habitacionActual != getRoom(abajo)) {  
-					posicionAgente.y--;
-					habitacionActual = getRoom(abajo);
-				}
+			
+		}
+		if (posicionAgente.equals(posicionInical) && posicionAgente.distance(dest)>0) { // could not move the agent
+			if (posicionAgente.x == dest.x && canMoveTo(Ag, posicionAgente.x + 1, posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x + 1, posicionAgente.y))) {
+				posicionAgente.x++;
+				añadirLocalizacionVisitada(Ag, posicionAgente);
+			} else if (posicionAgente.x == dest.x && canMoveTo(Ag, posicionAgente.x - 1, posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x - 1, posicionAgente.y))) {
+				posicionAgente.x--;
+				añadirLocalizacionVisitada(Ag, posicionAgente);
+			} else if (posicionAgente.y == dest.y && canMoveTo(Ag, posicionAgente.x, posicionAgente.y + 1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y + 1))) {
+				posicionAgente.y++;
+				añadirLocalizacionVisitada(Ag, posicionAgente);
+			} else if (posicionAgente.y == dest.y && canMoveTo(Ag, posicionAgente.x, posicionAgente.y - 1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y - 1))) {
+				posicionAgente.y--;
+				añadirLocalizacionVisitada(Ag, posicionAgente);	
 			}
 		}
-
+	
 		if (esAdyacente(posicionAgente, dest)){
-            localizacionesVisitadas.clear();
-        }
-
-		setAgPos(Ag, posicionAgente);
-
-		return true;
-	}        
-
-	Location mejorPuerta(int Ag, Location dest) {
-		Location posicionAgente = getAgPos(Ag);
-		String habitacionActual = getRoom(posicionAgente);
-		Location[] puertas;
-
-		switch (habitacionActual) {
-			case "kitchen":
-				puertas = new Location[]{lDoorKit_Hall, lDoorKit_HW};
-				break;
-			case "hall":
-				puertas = new Location[]{lDoorHall, lDoorLivi_Hall, lDoorKit_Hall};
-				break;
-			case "livingroom":
-				puertas = new Location[]{lDoorLivi_Hall, lDoorLivi_HW};
-				break;
-			case "hallway":
-				puertas = new Location[]{lDoorKit_HW, lDoorLivi_HW, lDoorBed_P, lDoorBed_I1, lDoorBed_I2, lDoorBath_HW};
-				break;
-			case "bath1":
-				puertas = new Location[]{lDoorBath_HW};
-				break;
-			case "bedroom2":
-				puertas = new Location[]{lDoorBed_I1};
-				break;
-			case "bedroom3":
-				puertas = new Location[]{lDoorBed_I2};
-				break;
-			case "bedroom1":
-				puertas = new Location[]{lDoorBed_P, lDoorBath_BedP};
-				break;
-			case "bath2":
-				puertas = new Location[]{lDoorBath_BedP};
-				break;
-			default:
-				puertas = new Location[]{};
-				break;
+			localizacionesVisitadas.clear();
 		}
+		setAgPos(Ag, posicionAgente); // move the agent in the grid 
+		
+        return true;        
+    }   
+
 	
-		Location mejorPuerta = puertas[0];
-		int menorDistancia = posicionAgente.distance(puertas[0]) + puertas[0].distance(dest);
-	
-		for (Location puerta : puertas) {
-			int distancia = posicionAgente.distance(puerta) + puerta.distance(dest);
-			if (distancia < menorDistancia) {
-				menorDistancia = distancia;
-				mejorPuerta = puerta;
-			}
-		}
-	
-		return mejorPuerta;
-	}
 	
     boolean getBeer() {
         if (fridgeOpen && availableBeers > 0 && !carryingBeer) {

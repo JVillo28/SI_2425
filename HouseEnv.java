@@ -63,29 +63,37 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
 		addPercept("owner", Literal.parseLiteral("atRoom("+OwnerPlace+")"));  
         addPercept("robot", Literal.parseLiteral("atRoom(owner,"+OwnerPlace+")"));
 		
-		if (lRobot.distance(model.lDoorHall) == 0 	||
-			lRobot.distance(model.lDoorKit_Hall) == 0 	||
-			lRobot.distance(model.lDoorKit_HW) == 0 	||
-			lRobot.distance(model.lDoorLivi_Hall) == 0 	||
-			lRobot.distance(model.lDoorLivi_HW) == 0 	||
-			lRobot.distance(model.lDoorBath_BedP) == 0 	||
-			lRobot.distance(model.lDoorBed_I1) == 0 	||
-			lRobot.distance(model.lDoorBed_I2) == 0 	||
-			lRobot.distance(model.lDoorBed_P) == 0) {  
-			addPercept("robot", Literal.parseLiteral("atDoor"));
+		String doorName = null;
+		if (lRobot.distance(model.lDoorHome) == 0) doorName = "lDoorHome";
+		else if (lRobot.distance(model.lDoorKit1) == 0) doorName = "doorKit1";
+		else if (lRobot.distance(model.lDoorKit2) == 0) doorName = "doorKit2";
+		else if (lRobot.distance(model.lDoorSal1) == 0) doorName = "doorSal1";
+		else if (lRobot.distance(model.lDoorSal2) == 0) doorName = "doorSal2";
+		else if (lRobot.distance(model.lDoorBath1) == 0) doorName = "doorBath1";
+		else if (lRobot.distance(model.lDoorBath2) == 0) doorName = "doorBath2";
+		else if (lRobot.distance(model.lDoorBed1) == 0) doorName = "doorBed1";
+		else if (lRobot.distance(model.lDoorBed2) == 0) doorName = "doorBed2";
+		else if (lRobot.distance(model.lDoorBed3) == 0) doorName = "doorBed3";
+
+		if (doorName != null) {
+			addPercept("enfermera", Literal.parseLiteral("atDoor("+ doorName +")"));
 		}
 
-		if (lOwner.distance(model.lDoorHall) == 0 	||
-			lOwner.distance(model.lDoorKit_Hall) == 0 	||
-			lOwner.distance(model.lDoorKit_HW) == 0 	||
-			lOwner.distance(model.lDoorLivi_Hall) == 0 	||
-			lOwner.distance(model.lDoorLivi_HW) == 0 	||
-			lOwner.distance(model.lDoorBath_BedP) == 0 	||
-			lOwner.distance(model.lDoorBed_I1) == 0 	||
-			lOwner.distance(model.lDoorBed_I2) == 0 	||
-			lOwner.distance(model.lDoorBed_P) == 0) {  
-			addPercept("owner", Literal.parseLiteral("atDoor"));
-		}
+		doorName = null;
+		if (lOwner.distance(model.lDoorHome) == 0) doorName = "lDoorHome";
+		else if (lOwner.distance(model.lDoorKit1) == 0) doorName = "doorKit1";
+		else if (lOwner.distance(model.lDoorKit2) == 0) doorName = "doorKit2";
+		else if (lOwner.distance(model.lDoorSal1) == 0) doorName = "doorSal1";
+		else if (lOwner.distance(model.lDoorSal2) == 0) doorName = "doorSal2";
+		else if (lOwner.distance(model.lDoorBath1) == 0) doorName = "doorBath1";
+		else if (lOwner.distance(model.lDoorBath2) == 0) doorName = "doorBath2";
+		else if (lOwner.distance(model.lDoorBed1) == 0) doorName = "doorBed1";
+		else if (lOwner.distance(model.lDoorBed2) == 0) doorName = "doorBed2";
+		else if (lOwner.distance(model.lDoorBed3) == 0) doorName = "doorBed3";
+
+		if (doorName != null) {
+			addPercept("owner", Literal.parseLiteral("atDoor("+ doorName +")"));
+		} 		
  		
 		
 	}
