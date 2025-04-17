@@ -36,6 +36,7 @@ public class HouseView extends GridWorldView {
     public void draw(Graphics g, int x, int y, int object) {
         Location lRobot = hmodel.getAgPos(0);
 		Location lOwner = hmodel.getAgPos(1);
+		Location lAuxiliar = hmodel.getAgPos(3);
 		//Location lGuest = hmodel.getAgPos(2);
 		Location loc  	= new Location(x, y);
 		String objPath = currentDirectory;
@@ -151,6 +152,7 @@ public class HouseView extends GridWorldView {
     public void drawAgent(Graphics g, int x, int y, Color c, int id) {
         Location lRobot = hmodel.getAgPos(0);
         Location lOwner = hmodel.getAgPos(1);
+		Location lAuxiliar = hmodel.getAgPos(3);
 		
 		//Location lGuest = hmodel.getAgPos(2);
 		String objPath = currentDirectory;
@@ -169,7 +171,11 @@ public class HouseView extends GridWorldView {
 				g.setColor(Color.black);
 				super.drawString(g, x, y, defaultFont, "Rob");
 			}
-		} else if (id > 1) {  
+		} else if (id == 3) {
+			objPath = "/doc/auxiliar.png";
+					drawImage(g,x,y,objPath);
+
+		} else if (id == 1) {  
 		    drawMan(g, x, y, "down"); 
 		} else { 
 			if (lOwner.equals(hmodel.lChair1)) {

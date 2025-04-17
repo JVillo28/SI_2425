@@ -25,7 +25,15 @@ pauta(dalsi, 25).
 pauta(frenadol, 40). 
 pauta(aspirina, 50).
 
+//Caducidades
+caducidad(paracetamol, 50).
+caducidad(ibuprofeno, 80).
+caducidad(dalsi, 30).
+caducidad(frenadol, 100).
+caducidad(aspirina, 100).
+
 medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar owner
+medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el owner en el momento
 /* Initial goals */
 
 //Owner will send his prescription to the robot
@@ -42,19 +50,12 @@ medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar own
 
 
 
-!sit.
+
 
 !send_pauta.
 
 !aMiBola.
 
-!open.
-
-!walk.
-
-!wakeup.
-
-!check_bored.
 
 // Initially Owner could be: sit, opening the door, waking up, walking, ...
 //!sit.   			
@@ -64,9 +65,14 @@ medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar own
 
 +!send_pauta : true  <-
 	.findall(pauta(X,Y), pauta(X,Y), L);
+	.findall(caducidad(X,Y), caducidad(X,Y), U);
 	.print("Mi pauta: ", L);
 	.send(enfermera, tell, L);
+	.send(enfermera, tell, U);
+	.send(auxiliar, tell, L);
+	.send(auxiliar, tell, U);
 	.send(enfermera,achieve,inicia);
+	.send(auxiliar,achieve,inicia);
 	!inicia.
 
 
@@ -74,8 +80,19 @@ medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar own
     .print("Iniciando recordatorios de medicamentos...");
     .time(H, M, S);
     .findall(consumo(X,T,H,M,S), pauta(X,T), L);
+	.findall(caducidad(X,Y), caducidad(X,Y), U);
+	!iniciarCaducidad(U);
     !iniciarContadores(L);
-    !!tomarMedicina.
+    !tomarMedicina.
+
+
++!iniciarCaducidad([caducidad(X,_)|Cdr]) <-
+	!!contadorCaducidad(X);
+	!iniciarCaducidad(Cdr).
+
++!iniciarCaducidad([]) <- 
+	.print("Iniciacion de la caducidad completada").
+
 +!iniciarContadores([consumo(Medicina,T,H,M,S)|Cdr]) <-
     if(S+T>=60){ 
 		+consumo(Medicina,T,H,M+1,S+T-60);
@@ -88,6 +105,24 @@ medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar own
     !iniciarContadores(Cdr).
 +!iniciarContadores([]) <- .print("Inicialización completada").
 
++!contadorCaducidad(M) : caducidad(M, T) & not pedidoReposicion(M) <- 
+    if(T<15){
+		.send(auxiliar, achieve, addMedicinaReponer(M));
+        .send(auxiliar, achieve, reponerMedicina(M));
+        +pedidoReposicion(M);  // Marcar que ya se pidió
+    } 
+    -caducidad(M, T);
+    +caducidad(M, T-1);
+    .wait(1000);
+    .print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", M, "tiempo: ", T);
+    !contadorCaducidad(M).
+
++!contadorCaducidad(M) : caducidad(M, T) & pedidoReposicion(M) <- 
+    -caducidad(M, T);
+    +caducidad(M, T-1);
+    .wait(1000);
+    .print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", M, "tiempo: ", T);
+    !contadorCaducidad(M).
 
 +!addPauta(pauta(Medicacion,Tiempo)) <-
 	.println("Se me ha añadido la pauta: ",Medicacion," tiempo: ",Tiempo);
@@ -104,9 +139,9 @@ medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar own
 	-consumo(Medicacion,_,H,M,S).
 
 
-/* MISMA HORA Y MINUTO */						  
-+!tomarMedicina: pauta(Medicina,T) & consumo(Medicina,T,H,M,S) & .time(H,MM,SS) & ((MM == M & 15 >= S-SS ) | (M == MM+1 & S<15 & 15 >= (60-SS)+(S)))  & medicPend(Med) <- 
-	.println("ES HORA DE IR YENDO A POR LA MEDICACION");
+/* MISMA HORA Y MINUTO*/						
++!tomarMedicina: pauta(Medicina,T) & consumo(Medicina,T,H,M,S) & .time(H,MM,SS) & ((MM == M & 15 >= S-SS ) | (M == MM+1 & S<15 & 15 >= (60-SS)+(S)))  & medicPend(Med) <- // Funciona por que S siempre es anterior
+	.println("Hora de ir yendo a por la medicación...");
 	.println("Owner debe tomar ",Medicina, " a las: ",H,":",M,":",S);
 	.println("Voy a ir yendo a por ", Medicina, " a las: ",H,":",M,":",SS);	
 	!addMedicina(Medicina);
@@ -120,41 +155,62 @@ medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar own
 	.println("Actualizado consumo a min: ",MMM," seg: ",SSS);
     !tomarMedicina.
 
-+!aPorMedicina  <-
+
+/* NADA QUE TOMAR */
++!tomarMedicina <- 
+    .wait(10);
+    !tomarMedicina.
+
++!aPorMedicina: not busy  <-
 	+busy;
 	!at(owner, fridge);
 	.send(enfermera,achieve,cancelarMedicacion);
 	open(fridge); 
 	.belief(medicPend(L));
 	!cogerTodaMedicina(L);
+	!consumirMedicina;
 	.abolish(medicPend(L));
 	+medicPend([]);
-	.print("Me estoy tomando la medicación");
 	close(fridge);
 	!enviarMedicinaPendiente;
 	-busy.
 
-+!aPorMedicina: busy <-
-		.println("Añadido ", Medicina, " a la lista").
+
++!cancelarMedicacion: busy & .desire(aPorMedicina) <-
+	.print("Me prohiben ir a por la medicacion, estaba yendo a por ella");
+	.drop_desire(aPorMedicina);
+	-busy;
+	!aMiBola.
 
 +!cancelarMedicacion <-
-	.print("Me prohiben ir a por la medicacion");
-	.drop_intention(aPorMedicina).
+	.print("Me prohiben ir a por la medicacion y no estaba yendo yo").
 
 +!enviarMedicinaPendiente: medicPend(L) <-
 	.send(enfermera,achieve,medicinaRecibida(L)).
 
 
 
++!consumirMedicina: medicActualOwner([Car|Cdr]) <-
+	.println("Tomando ", Car);
+	-medicActualOwner(_);
+	+medicActualOwner(Cdr);
+	!consumirMedicina.
+
++!consumirMedicina: medicActualOwner([]) <-
+	.println("Me he tomado toda la medicina").	
 
 
 +!cogerTodaMedicina([Car|Cdr]) <-
 		.println("Cojo la medicina ",Car);
 		getMedicina(Car);
+		.belief(medicActualOwner(L));
+		-medicActualOwner(_);
+		+medicActualOwner([Car|L]);
 		!cogerTodaMedicina(Cdr).
 
-+!cogerTodaMedicina([]) <-
-		.println("He cogido toda la medicina").
++!cogerTodaMedicina([]): medicActualOwner(L) <-
+		.println("He cogido toda la medicina");
+		.send(enfermera,tell,medicActualOwner(L)).
 
 /* NADA QUE TOMAR */
 +!tomarMedicina <- 
@@ -171,13 +227,38 @@ medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar own
 	-medicPend(_);
 	+medicPend(L).
 
-+!aMiBola : true
-   <- .random(X); .wait(X*10000+2000);
-   	  .print("VOY YO A POR LA MEDICINA");
-	  .drop_all_intentions;
-	  !aPorMedicina;
-	  !sit;
-	  !aMiBola.
++!aMiBola <- 
+   	!!sit;
+	.random(X); .wait(X*10000+2000);
+   	.print("VOY YO A POR LA MEDICINA");
+	!goToMedicina.
+	  
+
+	
++!goToMedicina: busy <-
+	 .println("Estoy ocupado pero voy a por la medicina igual");
+	 .drop_desire(sit);
+	 -busy;
+	 !aPorMedicina;
+	 !aMiBola.
+
++!goToMedicina: not busy <-
+	 .println("No estoy ocupado voy a por la medicina");
+	 !aPorMedicina;
+	 !aMiBola.
+
+/*+!esperarHoraPerfecta(T) <-
+	.println(T);
+	if (T<=5){
+		.println("Queda poco para hora, voy a esperar...");
+		//.drop_desire;
+		.wait(T*1000);
+		.println("pasado");
+		!aMiBola;
+	}else{
+		.println("Es muy pronto para esperar!");
+	}.
+*/
 
 +!wakeup : .my_name(Ag) & not busy <-
 	+busy;
