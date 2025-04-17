@@ -19,13 +19,14 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
     public static final Literal af   = Literal.parseLiteral("at(enfermera,fridge)");
     public static final Literal ao   = Literal.parseLiteral("at(enfermera,owner)");
     public static final Literal ad   = Literal.parseLiteral("at(enfermera,delivery)");
+	public static final Literal ac   = Literal.parseLiteral("at(enfermera, charger)");
 
 
 	public static final Literal aaf   = Literal.parseLiteral("at(auxiliar,fridge)");
     public static final Literal aao   = Literal.parseLiteral("at(auxiliar,owner)");
     public static final Literal aad   = Literal.parseLiteral("at(auxiliar,delivery)");
-	public static final Literal ai   = Literal.parseLiteral("at(auxiliar,initial)");
-
+	public static final Literal ai   =  Literal.parseLiteral("at(auxiliar,initial)");
+    public static final Literal aac   = Literal.parseLiteral("at(auxiliar, charger)");
 	
     public static final Literal oaf  = Literal.parseLiteral("at(owner,fridge)");
     public static final Literal oac1 = Literal.parseLiteral("at(owner,chair1)");
@@ -153,6 +154,8 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
 		addPercept(Literal.parseLiteral("atRoom(chair4, "+chair4Place+")"));
 		String deliveryPlace = model.getRoom(model.lDeliver);
 		addPercept(Literal.parseLiteral("atRoom(delivery, "+deliveryPlace+")"));
+		String chargerPlace = model.getRoom(model.lCharger);
+		addPercept(Literal.parseLiteral("atRoom(charger, "+chargerPlace+")"));
 		String initialPlace = model.getRoom(model.lInitial);
 		addPercept(Literal.parseLiteral("atRoom(initial, "+initialPlace+")"));
 		String bed1Place = model.getRoom(model.lBed1);
@@ -205,6 +208,14 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
 		if (lAuxiliar.distance(model.lDeliver)==1) {
             addPercept("auxiliar", aad);
         }
+
+		if(lRobot.distance(model.lCharger)==1){
+			addPercept("enfermera", ac);
+		}
+
+		if(lAuxiliar.distance(model.lCharger)==1) {
+			addPercept("auxiliar", aac);
+		}
 
 		if (lAuxiliar.distance(model.lInitial)==1) {
             addPercept("auxiliar", ai);
@@ -283,6 +294,8 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
 				case "owner": dest = model.getAgPos(HouseModel.OWNER);  
 				break;     
 				case "delivery": dest = model.lDeliver;  
+				break;
+				case "charger": dest = model.lCharger;
 				break;
 				case "initial": dest = model.lInitial;  
 				break;     

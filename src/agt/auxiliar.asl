@@ -17,7 +17,9 @@ connect(hallway, bedroom3, doorBed3).
 connect(hall, livingroom, doorSal1).        
 connect(livingroom, hall, doorSal1).
 connect(hallway, livingroom, doorSal2).       
-connect(livingroom, hallway, doorSal2).     
+connect(livingroom, hallway, doorSal2).   
+
+battery(288). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
 
 // initially, robot is free
 free.
@@ -38,6 +40,7 @@ medicRep([]). //Lista de medicinas para reponer
     .time(H, M, S);
     .findall(consumo(X,T,H,M,S), pauta(X,T), L);
     !iniciarContadores(L);
+	!batteryState;
 	!iniciarStock.
 
 +!iniciarContadores([consumo(Medicina,T,H,M,S)|Cdr]) <-
@@ -63,7 +66,8 @@ medicRep([]). //Lista de medicinas para reponer
 	!iniciarStock.
 
 
-+!reponerMedicina(Medicina) <-
++!reponerMedicina(Medicina) : battery(B) & B > 0 <- 
+	!consumo(1);
     .println("La medicina ", Medicina, " va a caducar");
     .println("Yendo a la zona de entrega");
     !at(auxiliar, delivery);
@@ -87,7 +91,8 @@ medicRep([]). //Lista de medicinas para reponer
 	-medicRep(_);
 	+medicRep([]).
 
-+!actualizarMedicina([Med|MedL]) <-
++!actualizarMedicina([Med|MedL]) : battery(B) & B > 0 <- 
+	!consumo(1);
 	.findall(caducidad(Med,Y), caducidad(Med,Y), U);
 	.send(owner, untell, caducidad(Med,Y));
 	.send(owner, untell, pedidoReposicion(Med));
@@ -116,7 +121,9 @@ medicRep([]). //Lista de medicinas para reponer
 	!comprobarMedicina(Med,StockNuevo);
 	!comprobarMedicinas(Cdr,StockNuevo).
 
-+!comprobarMedicinas([],StockNuevo) <- .print("Todas medicinas comprobadas").
++!comprobarMedicinas([],StockNuevo) : battery(B) & B > 0 <- 
+	!consumo(1); 
+	.print("Todas medicinas comprobadas").
 
 +!comprobarMedicina(MedicinaTomada,[[MedicinaTomada,Q1]|Cdr1]) <-
 	.belief(stockActual(L));
@@ -135,7 +142,8 @@ medicRep([]). //Lista de medicinas para reponer
 	}
 	.wait(1000).
 
-+!comprobarStockMedicina(MedicinaTomada,Q1,[[_,_]|Cdr]) <- 
++!comprobarStockMedicina(MedicinaTomada,Q1,[[_,_]|Cdr]) : battery(B) & B > 0 <- 
+	!consumo(1);
 	!comprobarStockMedicina(MedicinaTomada,Q1,Cdr).
 
 +!enviarMedicinaPendiente: medicPend(L) <-
@@ -146,7 +154,8 @@ medicRep([]). //Lista de medicinas para reponer
 	-medicActual(_);
 	+medicActual([]).
 
-+!darMedicina([Med|MedL],H,M,S) <-
++!darMedicina([Med|MedL],H,M,S) : battery(B) & B > 0 <- 
+	!consumo(1);
 	.time(HH,MM,SS);
 	.println("Dando al owner la medicina: ", Med, " a la hora: H:",HH,":",MM,":",SS);
 	!darMedicina(MedL,H,M,S).
@@ -171,7 +180,8 @@ medicRep([]). //Lista de medicinas para reponer
 		!addMedicinaActual(Car);
 		!cogerTodaMedicina(Cdr).
 
-+!cogerTodaMedicina([]) <-
++!cogerTodaMedicina([]) : battery(B) & B > 0 <- 
+		!consumo(1);
 		.println("He cogido toda la medicina");
 		!actualizarStock.
 
@@ -187,33 +197,54 @@ medicRep([]). //Lista de medicinas para reponer
 	!go(P);                                        
 	!at(Ag, P).            
 	                                                   
-+!go(P) : atRoom(RoomAg) & atRoom(P, RoomAg) <- 
++!go(P) : atRoom(RoomAg) & atRoom(P, RoomAg) & battery(B) & B > 0 <- 
+	!consumo(1);
 	move_towards(P).  
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP &
-		  connect(RoomAg, RoomP, Door) & not atDoor(Door) <-
+		  connect(RoomAg, RoomP, Door) & not atDoor(Door) & battery(B) & B > 0 <- 
+	!consumo(1);
 	move_towards(Door); 
 	!go(P).                     
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP &
-		  connect(RoomAg, RoomP, Door) & not atDoor(Door) <- 
+		  connect(RoomAg, RoomP, Door) & not atDoor(Door) & battery(B) & B > 0 <- 
+	!consumo(1); 
 	move_towards(P); 
 	!go(P).       
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP &
 		  not connect(RoomAg, RoomP, _) & connect(RoomAg, Room, DoorR) &
-		  connect(Room, RoomP, DoorP) & atDoor(DoorR) <-
+		  connect(Room, RoomP, DoorP) & atDoor(DoorR) & battery(B) & B > 0 <- 
+	!consumo(1);
 	move_towards(DoorP); 
 	!go(P). 
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP &
 		  not connect(RoomAg, RoomP, _) & connect(RoomAg, Room, DoorR) &
-		  connect(Room, RoomP, DoorP) & not atDoor(DoorR) <-
+		  connect(Room, RoomP, DoorP) & not atDoor(DoorR) & battery(B) & B > 0 <- 
+	!consumo(1);
 	move_towards(DoorR); 
 	!go(P). 
-+!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP <- //& not atDoor <-
++!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP & battery(B) & B > 0 <- 
+	!consumo(1); //& not atDoor <-
 	move_towards(P).                                                          
 -!go(P) <- 
 	.println("¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿ WHAT A FUCK !!!!!!!!!!!!!!!!!!!!");
 	.println("..........SOMETHING GOES WRONG......").                                        
 	                                                                        
 
++!consumo(X) : battery(B) <-
+	.print("-1 de batería: ", B);
+	-battery(B);
+	+battery(B-X).
+
+//a lo mejor se puede poner otro plan de battery state para cuando sí este en el puesto de carga y se esté cargando.
+
++!batteryState : battery(B) & B < 50 & free <-
+	.print("Me queda poca batería. Voy al puesto de carga");
+	!at(auxiliar, charger);
+	// useCharger(); esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería
+	!batteryState.
+
++!batteryState : battery(B) & B > 49 <-
+	!batteryState.
                                      
 +?time(T) : true
   <-  time.check(T).

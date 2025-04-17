@@ -130,6 +130,16 @@ public class HouseView extends GridWorldView {
 				//drawScaledImage(g, x, y, "doc/closeWasher.png", 50, 60);				
 			}           
             break;
+		case HouseModel.CHARGER:
+			g.setColor(Color.lightGray);
+			if(lRobot.equals(hmodel.lCharger) || lAuxiliar.equals(hmodel.lCharger)){
+				objPath = "/doc/chargerStationUsed.png";
+				drawScaledImage(g, x, y, objPath, 50, 50 );
+			} else {
+				objPath = "/doc/chargerStation.png";
+				drawScaledImage(g, x, y, objPath, 50, 50 );
+			}
+		break;
         case HouseModel.FRIDGE:
             g.setColor(Color.lightGray); 
 			if (lRobot.isNeigbour(hmodel.lFridge) || (lOwner.isNeigbour(hmodel.lFridge))) { 

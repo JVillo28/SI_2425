@@ -57,7 +57,8 @@ public class HouseModel extends GridWorldModel {
 	public Map<String,Integer> disponibilidadMedicamentos = new HashMap<>();
 
 	boolean kitAbierto   		= false; 	
-	boolean llevandoMedicina 	= false; 	
+	boolean llevandoMedicina 	= false; 
+	boolean chargerFree 		= true;	
 
 
 
@@ -71,6 +72,7 @@ public class HouseModel extends GridWorldModel {
     Location lChair2 	= new Location(GSize/2+1, GSize-4); 
     Location lChair4 	= new Location(GSize/2, GSize-4); 
     Location lDeliver 	= new Location(0, GSize-1);
+	Location lCharger	= new Location(2, GSize-5);
 	Location lInitial 	= new Location(0, 0);
     Location lWasher 	= new Location(GSize/3, 0);	
     Location lFridge 	= new Location(2, 0);
@@ -132,6 +134,7 @@ public class HouseModel extends GridWorldModel {
         add(FRIDGE, lFridge); 
 		add(WASHER, lWasher); 
 		add(DOOR,   lDeliver); 
+		add(CHARGER, lCharger);
 		add(SOFA,   lSofa);
 		add(CHAIR,  lChair2);
 		add(CHAIR,  lChair3);
@@ -236,6 +239,15 @@ public class HouseModel extends GridWorldModel {
             return false;
         }
     }  
+
+	boolean useCharger() {
+		if (chargerFree){
+			chargerFree = false;
+			return true;
+		} else {
+			return false;
+		}
+	}
 	
 	boolean getMedicina(String medicina, int unidad){
 		if(disponibilidadMedicamentos.containsKey(medicina) && fridgeOpen && disponibilidadMedicamentos.get(medicina)>0 && !carryingDrug){
@@ -269,7 +281,7 @@ public class HouseModel extends GridWorldModel {
 			Location robotLocation = getAgPos(NURSE); 
 			if (x==robotLocation.x && y==robotLocation.y){
 				return true;
-			}else return (isFree(x,y) && !hasObject(WASHER,x,y) && !aTable.contains(siguiente) && !hasObject(BED,x,y) && !hasObject(FRIDGE,x,y));
+			}else return (isFree(x,y) && !hasObject(WASHER,x,y) && !aTable.contains(siguiente) && !hasObject(BED,x,y) && !hasObject(FRIDGE,x,y) && !hasObject(CHARGER,x,y));
 		}
 	}
 	
@@ -420,12 +432,14 @@ public class HouseModel extends GridWorldModel {
 	}
 
 	boolean recargarEnergia(int Ag) {
-		if (Ag == NURSE) {
+		if(chargerFree){
+			if (Ag == NURSE) {
 			if(bateria_robot < GridSize*2*GSize) {
 				bateria_robot += 1;
 				return true;
 			} else {
 				System.out.println("El robot ENFERMERA ya tiene la bateria cargada al maximo.");
+				chargerFree = true;
 				return false;
 			}
 		} else {
@@ -434,9 +448,14 @@ public class HouseModel extends GridWorldModel {
 				return true;
 			} else {
 				System.out.println("El robot AUXILIAR ya tiene la bateria cargada al maximo.");
+				chargerFree = true;
 				return false;
 			}
 		}
+		} else {
+			return false;
+		}
+		
 	}
 
 	
