@@ -16,6 +16,10 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
     public static final Literal clf  = Literal.parseLiteral("close(fridge)");
 	public static final Literal ok   = Literal.parseLiteral("open(kit)");
     public static final Literal clk  = Literal.parseLiteral("close(kit)");
+	public static final Literal uc   = Literal.parseLiteral("useCharger");
+    public static final Literal qc   = Literal.parseLiteral("quitCharger");
+
+	
 
 
     public static final Literal af   = Literal.parseLiteral("at(enfermera,fridge)");
@@ -228,11 +232,11 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
             addPercept("auxiliar", aad);
         }
 
-		if(lRobot.distance(model.lCharger)==1){
+		if(lRobot.distance(model.lCharger)==0){
 			addPercept("enfermera", ac);
 		}
 
-		if(lAuxiliar.distance(model.lCharger)==1) {
+		if(lAuxiliar.distance(model.lCharger)==0) {
 			addPercept("auxiliar", aac);
 		}
 
@@ -304,11 +308,17 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
         } else if (action.equals(clf)) { // clf = close(fridge)
             result = model.closeFridge();   
 
-        } else if (action.equals(ok)) { // of = open(fridge)
+        } else if (action.equals(ok)) { // ok = open(kit)
             result = model.openKit();
 
-        } else if (action.equals(clk)) { // clf = close(fridge)
-            result = model.closeKit();     
+        } else if (action.equals(clk)) { // clk = close(kit)
+            result = model.closeKit(); 
+			   
+		} else if (action.equals(uc)) { // uc = use(charger)
+            result = model.useCharger();
+
+        } else if (action.equals(qc)) { // qc = quit(charger)
+            result = model.quitCharger();    
                                                     
         } else if (action.getFunctor().equals("move_towards")) {
             String l = action.getTerm(0).toString();

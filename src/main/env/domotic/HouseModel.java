@@ -269,12 +269,25 @@ public class HouseModel extends GridWorldModel {
     }   
 
 	boolean useCharger() {
+		boolean toRet = false;
 		if (chargerFree){
 			chargerFree = false;
-			return true;
+			toRet = true;
 		} else {
-			return false;
+			toRet =  false;
 		}
+		return toRet;
+	}
+
+	boolean quitCharger() {
+		boolean toRet = false;
+		if (!chargerFree){
+			chargerFree = true;
+			toRet = true;
+		} else {
+			toRet =  false;
+		}
+		return toRet;
 	}
 	
 	boolean getMedicina(String medicina, int unidad){

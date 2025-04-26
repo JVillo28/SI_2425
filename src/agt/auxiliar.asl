@@ -240,8 +240,9 @@ medicRep([]). //Lista de medicinas para reponer
 +!batteryState : battery(B) & B < 50 & free <-
 	.print("Me queda poca batería. Voy al puesto de carga");
 	!at(auxiliar, charger);
-	useCharger(); //esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería
+	useCharger; //esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería
 	!cargarBateria;
+	quitCharger;
 	!batteryState.
 
 +!cargarBateria : battery(B) <-
