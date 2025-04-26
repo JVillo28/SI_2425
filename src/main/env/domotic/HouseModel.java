@@ -45,7 +45,8 @@ public class HouseModel extends GridWorldModel {
 	boolean carryingDrug = false; // whether the robot is carrying drug
 	int availableDrugs  = 2; // how many drugs are available
                           
-    boolean fridgeOpen   = false; 	// whether the fridge is open                                   
+    boolean fridgeOpen  = false; 	// whether the fridge is open
+	boolean kitOpen		= false;                                   
     int sipCount        = 0; 		// how many sip the owner did
 
 	public final String PARACETAMOL = "paracetamol";
@@ -56,7 +57,6 @@ public class HouseModel extends GridWorldModel {
 
 	public Map<String,Integer> disponibilidadMedicamentos = new HashMap<>();
 
-	boolean kitAbierto   		= false; 	
 	boolean llevandoMedicina 	= false; 
 	boolean chargerFree 		= true;	
 
@@ -76,6 +76,7 @@ public class HouseModel extends GridWorldModel {
 	Location lInitial 	= new Location(0, 0);
     Location lWasher 	= new Location(GSize/3, 0);	
     Location lFridge 	= new Location(2, 0);
+	Location lKit		= new Location(0, 0);
 
 
     Location lTable  	= new Location(GSize/2, GSize-3);
@@ -127,7 +128,7 @@ public class HouseModel extends GridWorldModel {
                                                                            
         // Initial location for the owner and the nurse
         setAgPos(NURSE, 19, 10);
-		setAgPos(AUXILIAR, 0, 0);  
+		setAgPos(AUXILIAR, 0, 3);  
 		setAgPos(OWNER, 23, 8);
 
 		// Location of the furniture of the house
@@ -144,6 +145,7 @@ public class HouseModel extends GridWorldModel {
 		add(BED,	lBed1);
 		add(BED,	lBed2);
 		add(BED,	lBed3);
+		add(KIT, 	lKit);
 
 		// Locations of doors
 		add(DOOR, lDoorKit1);
@@ -222,23 +224,49 @@ public class HouseModel extends GridWorldModel {
 	}
 
 	boolean openFridge() {
-        if (!fridgeOpen) {
-			mostrarMedicinas();
+        boolean toRet=false;
+		if (!fridgeOpen) {
             fridgeOpen = true;
-            return true;
+            toRet = true;
         } else {
-            return false;
+            toRet = false;
         }
+		return toRet;
     }
 
     boolean closeFridge() {
+		boolean toRet=false;
         if (fridgeOpen) {
             fridgeOpen = false;
-            return true;
+            toRet = true;
         } else {
-            return false;
+            toRet =  false;
         }
-    }  
+		return toRet;
+    }
+
+	boolean openKit() {
+        boolean toRet=false;
+		if (!kitOpen) {
+			mostrarMedicinas();
+            kitOpen = true;
+            toRet = true;
+        } else {
+            toRet = false;
+        }
+		return toRet;
+    }
+
+    boolean closeKit() {
+		boolean toRet=false;
+        if (kitOpen) {
+            kitOpen = false;
+            toRet = true;
+        } else {
+            toRet =  false;
+        }
+		return toRet;
+    }   
 
 	boolean useCharger() {
 		if (chargerFree){
@@ -279,7 +307,8 @@ public class HouseModel extends GridWorldModel {
 		           !aSofa.contains(siguiente) && !hasObject(CHAIR,x,y)) && !hayUnaCama(siguiente) && !hasObject(FRIDGE,x,y);
 		} else {
 			Location robotLocation = getAgPos(NURSE); 
-			if (x==robotLocation.x && y==robotLocation.y){
+			Location auxiliarLocation = getAgPos(AUXILIAR);
+			if ((x==robotLocation.x && y==robotLocation.y) || (x==auxiliarLocation.x && y==auxiliarLocation.y)){
 				return true;
 			}else return (isFree(x,y) && !hasObject(WASHER,x,y) && !aTable.contains(siguiente) && !hasObject(BED,x,y) && !hasObject(FRIDGE,x,y) && !hasObject(CHARGER,x,y));
 		}

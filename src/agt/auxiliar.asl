@@ -74,11 +74,11 @@ medicRep([]). //Lista de medicinas para reponer
     .println("Medicinas recogidas");
     .wait(1000);
     .println("Yendo a la nevera a reponer");
-    !at(auxiliar, fridge);
-    open(fridge);
+    !at(auxiliar, kit);
+    open(kit);
 	?medicRep(L);
 	!actualizarMedicina(L);
-    close(fridge);
+    close(kit);
 	!at(auxiliar, initial).
 
 +!addMedicinaReponer(Medicina): medicRep(Med) <-

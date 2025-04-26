@@ -86,14 +86,14 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 +!aPorMedicina(Medicina,H,M,S): free[source(self)]<-
 		.println("A por medicina");
     	-free[source(self)];
-		!at(enfermera, fridge);
+		!at(enfermera, kit);
 		.send(owner,achieve,cancelarMedicacion);
-		open(fridge);
+		open(kit);
 		.belief(medicPend(L));
 		!cogerTodaMedicina(L);
 		.abolish(medicPend(L));
 		+medicPend([]);
-		close(fridge);
+		close(kit);
 		!enviarMedicinaPendiente;
 		!comprobarHora(L,H,M,S);
 		+free[source(self)].
@@ -142,7 +142,7 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 +!comprobarTomaOwner: free[source(self)] <- 
 	-free;
 	.println("El owner ha cogido la medicina, comprobando si se la ha tomado...");
-	!at(enfermera,fridge);
+	!at(enfermera,kit);
 	!comprobarStock;
 	+free.
 

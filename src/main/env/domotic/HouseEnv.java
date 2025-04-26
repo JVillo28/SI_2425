@@ -14,12 +14,15 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
     // common literals
     public static final Literal of   = Literal.parseLiteral("open(fridge)");
     public static final Literal clf  = Literal.parseLiteral("close(fridge)");
+	public static final Literal ok   = Literal.parseLiteral("open(kit)");
+    public static final Literal clk  = Literal.parseLiteral("close(kit)");
 
 
     public static final Literal af   = Literal.parseLiteral("at(enfermera,fridge)");
     public static final Literal ao   = Literal.parseLiteral("at(enfermera,owner)");
     public static final Literal ad   = Literal.parseLiteral("at(enfermera,delivery)");
 	public static final Literal ac   = Literal.parseLiteral("at(enfermera, charger)");
+	public static final Literal ak   = Literal.parseLiteral("at(enfermera, kit)");
 
 
 	public static final Literal aaf   = Literal.parseLiteral("at(auxiliar,fridge)");
@@ -27,6 +30,7 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
     public static final Literal aad   = Literal.parseLiteral("at(auxiliar,delivery)");
 	public static final Literal ai   =  Literal.parseLiteral("at(auxiliar,initial)");
     public static final Literal aac   = Literal.parseLiteral("at(auxiliar, charger)");
+	public static final Literal aak   = Literal.parseLiteral("at(auxiliar, kit)");
 	
     public static final Literal oaf  = Literal.parseLiteral("at(owner,fridge)");
     public static final Literal oac1 = Literal.parseLiteral("at(owner,chair1)");
@@ -34,6 +38,7 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
     public static final Literal oac3 = Literal.parseLiteral("at(owner,chair3)");
     public static final Literal oac4 = Literal.parseLiteral("at(owner,chair4)");
     public static final Literal oasf = Literal.parseLiteral("at(owner,sofa)");
+	public static final Literal oak	 = Literal.parseLiteral("at(owner,kit)");
 
 
 	//Literales nuevos
@@ -164,6 +169,8 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
 		addPercept(Literal.parseLiteral("atRoom(bed2, "+bed2Place+")"));
 		String bed3Place = model.getRoom(model.lBed3);
 		addPercept(Literal.parseLiteral("atRoom(bed3, "+bed3Place+")"));
+		String kitPlace = model.getRoom(model.lKit);
+		addPercept(Literal.parseLiteral("atRoom(kit, "+kitPlace+")"));
 	}
 	                                                       
     /** creates the agents percepts based on the HouseModel */
@@ -191,6 +198,18 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
 		
         if (lOwner.distance(model.lFridge)==1) {
             addPercept("owner", oaf);
+        }
+		
+		if (lRobot.distance(model.lKit)==1) {
+            addPercept("enfermera", ak);
+        }
+		
+		if (lAuxiliar.distance(model.lKit)==1) {
+            addPercept("auxiliar", aak);
+        }
+		
+        if (lOwner.distance(model.lKit)==1) {
+            addPercept("owner", oak);
         } 
 		
         if (lRobot.distance(lOwner)==1) {                                                     
@@ -283,8 +302,14 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
             result = model.openFridge();
 
         } else if (action.equals(clf)) { // clf = close(fridge)
-            result = model.closeFridge();     
-                                                                     
+            result = model.closeFridge();   
+
+        } else if (action.equals(ok)) { // of = open(fridge)
+            result = model.openKit();
+
+        } else if (action.equals(clk)) { // clf = close(fridge)
+            result = model.closeKit();     
+                                                    
         } else if (action.getFunctor().equals("move_towards")) {
             String l = action.getTerm(0).toString();
             Location dest = null;
@@ -331,6 +356,9 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
 				break;
 				case "doorBed3": dest = model.lDoorBed3;                  
 				break;
+				case "kit": dest 	= model.lKit;                  
+				break;
+ 
  
             }
             try {

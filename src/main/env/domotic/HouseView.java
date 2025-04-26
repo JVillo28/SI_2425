@@ -152,9 +152,20 @@ public class HouseView extends GridWorldView {
 				drawImage(g, x, y, objPath);	
 				g.setColor(Color.blue);
 			}                      
-            drawString(g, x, y, defaultFont, "Fr ("+hmodel.availableDrugs+")");
+            break;
+		case HouseModel.KIT:
+            g.setColor(Color.lightGray); 
+			if (lRobot.isNeigbour(hmodel.lKit) || lOwner.isNeigbour(hmodel.lKit) || lAuxiliar.isNeigbour(hmodel.lKit)) { 
+				objPath = "/doc/kitOpen.png";//currentDirectory.concat("/doc/openNevera.png");
+				drawImage(g, x, y, objPath);
+                //super.drawAgent(g, x, y, Color.red, -1);
+            } else {   
+				objPath = "/doc/kitClosed.png";//currentDirectory.concat("/doc/closeNevera.png");
+				drawImage(g, x, y, objPath);	
+			}                      
             break; 
 		}
+
         repaint();
     }
                           
@@ -184,10 +195,7 @@ public class HouseView extends GridWorldView {
 		} else if (id == 3) {
 			objPath = "/doc/auxiliar.png";
 					drawImage(g,x,y,objPath);
-
-		} else if (id == 1) {  
-		    drawMan(g, x, y, "down"); 
-		} else { 
+		}  else { 
 			if (lOwner.equals(hmodel.lChair1)) {
 				drawMan(g, hmodel.lChair1.x, hmodel.lChair1.y, "left"); 
 			} else if (lOwner.equals(hmodel.lChair2)) {

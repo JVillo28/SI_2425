@@ -163,15 +163,15 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 
 +!aPorMedicina: not busy  <-
 	+busy;
-	!at(owner, fridge);
+	!at(owner, kit);
 	.send(enfermera,achieve,cancelarMedicacion);
-	open(fridge); 
+	open(kit); 
 	.belief(medicPend(L));
 	!cogerTodaMedicina(L);
 	!consumirMedicina;
 	.abolish(medicPend(L));
 	+medicPend([]);
-	close(fridge);
+	close(kit);
 	!enviarMedicinaPendiente;
 	-busy.
 
