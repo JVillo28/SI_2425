@@ -193,15 +193,21 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 
 
 +!comprobarStockMedicina(MedicinaTomada,Q1,[[MedicinaTomada,Q2]|Cdr]) <- 
+	.wait(1000);
 	if (Q1 < Q2){
 		.print("Owner se ha tomado medicina ",MedicinaTomada);
 	}else{
 		.print("AVISO! Owner no se ha tomado  ", MedicinaTomada);
 	}
-	.wait(1000).
+	.wait(500).
 
 +!comprobarStockMedicina(MedicinaTomada,Q1,[[_,_]|Cdr]) <- 
+	.wait(1000);
 	!comprobarStockMedicina(MedicinaTomada,Q1,Cdr).
+
++!comprobarStockMedicina(MedicinaTomada,Q1,[]) <- 
+	.wait(1000);
+	.print("AVISO! Owner no se ha tomado  ", MedicinaTomada).
 
 
 

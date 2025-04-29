@@ -292,7 +292,7 @@ public class HouseModel extends GridWorldModel {
 	}
 	
 	boolean getMedicina(String medicina, int unidad){
-		if(disponibilidadMedicamentos.containsKey(medicina) && fridgeOpen && disponibilidadMedicamentos.get(medicina)>0 && !carryingDrug){
+		if(disponibilidadMedicamentos.containsKey(medicina) && kitOpen && disponibilidadMedicamentos.get(medicina)>0 ){
 			disponibilidadMedicamentos.put(medicina,disponibilidadMedicamentos.get(medicina)-1);
 			System.out.println("Eliminado "+Integer.toString(unidad)+" unidad de " + medicina);
 			return true;
@@ -427,7 +427,7 @@ public class HouseModel extends GridWorldModel {
 			
 		}
 		
-		if (posicionAgente.equals(posicionInical) && Ag == NURSE && posicionAgente.distance(dest)>0) { // agent tries to move in some direction
+		if (posicionAgente.equals(posicionInical) && (Ag == NURSE || Ag==AUXILIAR) && posicionAgente.distance(dest)>0) { // agent tries to move in some direction
 			if (posicionAgente.x == dest.x && canMoveTo(Ag, posicionAgente.x + 1, posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x + 1, posicionAgente.y))) {
 				posicionAgente.x++;
 				añadirLocalizacionVisitada(Ag, posicionAgente);
