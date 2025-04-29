@@ -107,22 +107,24 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 
 +!contadorCaducidad(M) : caducidad(M, T) & not pedidoReposicion(M) <- 
     if(T<15){
-		.send(auxiliar, achieve, addMedicinaReponer(M));
         .send(auxiliar, achieve, reponerMedicina(M));
         +pedidoReposicion(M);  // Marcar que ya se pidió
     } 
     -caducidad(M, T);
     +caducidad(M, T-1);
     .wait(1000);
-    .print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", M, "tiempo: ", T);
+    .print("SSSSSSSSSSSSSSSSS", M, "tiempo: ", T);
     !contadorCaducidad(M).
 
 +!contadorCaducidad(M) : caducidad(M, T) & pedidoReposicion(M) <- 
     -caducidad(M, T);
     +caducidad(M, T-1);
     .wait(1000);
-    .print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", M, "tiempo: ", T);
+    .print("NNNNNNNNNNNNNNNN", M, "tiempo: ", T);
     !contadorCaducidad(M).
+
++!cancelarPedido(M) <-
+	-pedidoReposicion(M).
 
 +!addPauta(pauta(Medicacion,Tiempo)) <-
 	.println("Se me ha añadido la pauta: ",Medicacion," tiempo: ",Tiempo);

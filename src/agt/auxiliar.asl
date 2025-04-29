@@ -66,8 +66,10 @@ medicRep([]). //Lista de medicinas para reponer
 	!iniciarStock.
 
 
-+!reponerMedicina(Medicina) : battery(B) & B > 0 <- 
++!reponerMedicina(Medicina) : battery(B) & B > 0 & medicRep([])<- 
 	!consumo(1);
+	-medicRep(_);
+	+medicRep([Medicina]);
     .println("La medicina ", Medicina, " va a caducar");
     .println("Yendo a la zona de entrega");
     !at(auxiliar, delivery);
@@ -81,7 +83,7 @@ medicRep([]). //Lista de medicinas para reponer
     close(kit);
 	!at(auxiliar, initial).
 
-+!addMedicinaReponer(Medicina): medicRep(Med) <-
++!reponerMedicina(Medicina): battery(B) & B > 0 & medicRep(Med) <-
 	.concat(Med,[Medicina],L);
 	-medicRep(_);
 	+medicRep(L).
@@ -95,7 +97,8 @@ medicRep([]). //Lista de medicinas para reponer
 	!consumo(1);
 	.findall(caducidad(Med,Y), caducidad(Med,Y), U);
 	.send(owner, untell, caducidad(Med,Y));
-	.send(owner, untell, pedidoReposicion(Med));
+	.println("ELIMINANDOOOOOOOOOOOOOOO" , Med);
+	.send(owner, achieve, cancelarPedido(Med));
     .send(enfermera, untell, caducidad(Med,Y));
     .send(owner, tell, U);
     .send(enfermera, tell, U);

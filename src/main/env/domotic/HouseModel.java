@@ -318,7 +318,7 @@ public class HouseModel extends GridWorldModel {
 		Location siguiente = new Location(x,y);
 		if (Ag == NURSE || Ag == AUXILIAR) {
 			return (isFree(x,y) && !hasObject(WASHER,x,y) && !aTable.contains(siguiente) &&
-		           !aSofa.contains(siguiente) && !hasObject(CHAIR,x,y)) && !hayUnaCama(siguiente) && !hasObject(FRIDGE,x,y);
+		           !aSofa.contains(siguiente) && !hasObject(CHAIR,x,y)) && !hayUnaCama(siguiente) && !hasObject(FRIDGE,x,y) && !hasObject(KIT,x,y);
 		} else {
 			Location robotLocation = getAgPos(NURSE); 
 			Location auxiliarLocation = getAgPos(AUXILIAR);
