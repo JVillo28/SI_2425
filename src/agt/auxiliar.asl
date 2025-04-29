@@ -19,7 +19,7 @@ connect(livingroom, hall, doorSal1).
 connect(hallway, livingroom, doorSal2).       
 connect(livingroom, hallway, doorSal2).   
 
-battery(288). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
+battery(48). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
 
 // initially, robot is free
 free.
@@ -41,9 +41,9 @@ medicStock([]).
     .time(H, M, S);
     .findall(consumo(X,T,H,M,S), pauta(X,T), L);
     !iniciarContadores(L);
-	!!batteryState;
 	!!alertaStock;
-	!iniciarStock.
+	!iniciarStock;
+	!batteryState.
 
 +!iniciarContadores([consumo(Medicina,T,H,M,S)|Cdr]) <-
     if(S+T>=60){ 
@@ -69,6 +69,7 @@ medicStock([]).
 
 
 +!reponerMedicina(Medicina) : battery(B) & B > 0 & medicRep([])<- 
+	-free;
 	!consumo(1);
 	-medicRep(_);
 	+medicRep([Medicina]);
@@ -83,9 +84,11 @@ medicStock([]).
 	?medicRep(L);
 	!actualizarMedicina(L);
     close(kit);
-	!at(auxiliar, initial).
+	!at(auxiliar, initial);
+	+free.
 
 +!reponerMedicina(Medicina): battery(B) & B > 0 & medicRep(Med) <-
+	-free;
 	.concat(Med,[Medicina],L);
 	-medicRep(_);
 	+medicRep(L).
@@ -93,9 +96,11 @@ medicStock([]).
 +!actualizarMedicina([]) <-
 	.println("TODA LA MEDICINA REPUESTA");
 	-medicRep(_);
-	+medicRep([]).
+	+medicRep([]);
+	+free.
 
 +!actualizarMedicina([Med|MedL]) : battery(B) & B > 0 <- 
+	-free;
 	!consumo(1);
 	.findall(caducidad(Med,Y), caducidad(Med,Y), U);
 	.send(owner, untell, caducidad(Med,Y));
@@ -122,12 +127,18 @@ medicStock([]).
 	-medicActualOwner(_);
 	!actualizarStock.
 
-+!alertaStock: true <-
++!alertaStock: medicStock([]) <-
+	-free;
 	.wait(1000);
 	getStock;
 	.findall([Med,Q],stock(Med,Q),Stock);
 	.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
-	!recorrerStock(Stock).
+	!recorrerStock(Stock);
+	!alertaStock.
+
++!alertaStock: true <-
+	!alertaStock.
+
 
 
 +!recorrerStock([[Med,Q]|Cdr]): medicStock(L) <- 
@@ -139,6 +150,7 @@ medicStock([]).
 	!recorrerStock(Cdr).
 
 +!recorrerStock([]) <- 
+	-free;
 	.println("Recorrido");
     .println("Yendo a reponer stock");
     !at(auxiliar, delivery);
@@ -150,14 +162,17 @@ medicStock([]).
 	!addStock(L);
 	!actualizarStock;
     close(kit);
-	!iniciarStock.
+	!iniciarStock;
+	+free.
 
 +!addStock([]) <-
 	.println("TODA EL STOCK REPUESTO");
 	-medicStock(_);
-	+medicStock([]).
+	+medicStock([]);
+	+free.
 
 +!addStock([Med|MedL]) : battery(B) & B > 0 <- 
+	-free;
 	!consumo(1);
 	.println("REPONIENDOO" , Med);
 	reponerStock(Med);
@@ -181,12 +196,14 @@ medicStock([]).
 
 
 +!comprobarStockMedicina(MedicinaTomada,Q1,[[MedicinaTomada,Q2]|Cdr]) <- 
+	-free;
 	if (Q1 < Q2){
 		.print("Owner se ha tomado medicina ",MedicinaTomada);
 	}else{
 		.print("AVISO! Owner no se ha tomado  ", MedicinaTomada);
 	}
-	.wait(1000).
+	.wait(1000);
+	+free.
 
 +!comprobarStockMedicina(MedicinaTomada,Q1,[[_,_]|Cdr]) : battery(B) & B > 0 <- 
 	!consumo(1);
@@ -198,9 +215,11 @@ medicStock([]).
 +!darMedicina([],H,M,S) <-
 	.println("TODA LA MEDICINA TOMADA");
 	-medicActual(_);
-	+medicActual([]).
+	+medicActual([]);
+	+free.
 
 +!darMedicina([Med|MedL],H,M,S) : battery(B) & B > 0 <- 
+	-free;
 	!consumo(1);
 	.time(HH,MM,SS);
 	.println("Dando al owner la medicina: ", Med, " a la hora: H:",HH,":",MM,":",SS);
@@ -221,6 +240,7 @@ medicStock([]).
 
 
 +!cogerTodaMedicina([Car|Cdr]) <-
+		-free;
 		.println("Cojo la medicina ",Car);
 		getMedicina(Car);
 		!addMedicinaActual(Car);
@@ -229,7 +249,8 @@ medicStock([]).
 +!cogerTodaMedicina([]) : battery(B) & B > 0 <- 
 		!consumo(1);
 		.println("He cogido toda la medicina");
-		!actualizarStock.
+		!actualizarStock;
+		+free.
 
 +!medicinaRecibida(L) <- 
 	.println("Medicamentos actualizados");
@@ -292,6 +313,7 @@ medicStock([]).
 	!at(auxiliar,afterCharger);
 	!batteryState.
 
+
 +!cargarBateria : battery(B) <-
 	.print("CAAAARRRRGAAAAANNNDOOOOOOOOO.....");
 	.wait(3000);
@@ -299,6 +321,8 @@ medicStock([]).
 	+battery(288);
 	.print("Estoy a tope jefe de equipo").
 
++!batteryState : battery(B) & B < 50 & not free <-
+	!batteryState.
 
 +!batteryState : battery(B) & B > 49 <-
 	!batteryState.
