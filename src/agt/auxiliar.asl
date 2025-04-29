@@ -41,9 +41,9 @@ medicStock([]).
     .time(H, M, S);
     .findall(consumo(X,T,H,M,S), pauta(X,T), L);
     !iniciarContadores(L);
-	!!alertaStock;
 	!iniciarStock;
-	!batteryState.
+	!!alertaStock;
+	!!batteryState.
 
 +!iniciarContadores([consumo(Medicina,T,H,M,S)|Cdr]) <-
     if(S+T>=60){ 
@@ -109,6 +109,8 @@ medicStock([]).
     .send(enfermera, untell, caducidad(Med,Y));
     .send(owner, tell, U);
     .send(enfermera, tell, U);
+	reponerStock(Med);
+	!actualizarStock;
 	!actualizarMedicina(MedL).
 
 +!comprobarHora(_,_,_,_) <-
@@ -128,7 +130,6 @@ medicStock([]).
 	!actualizarStock.
 
 +!alertaStock: medicStock([]) <-
-	-free;
 	.wait(1000);
 	getStock;
 	.findall([Med,Q],stock(Med,Q),Stock);
@@ -147,9 +148,15 @@ medicStock([]).
         -medicStock(L);
 		+medicStock([Med|L]);
     }
+	!hayQueRecoger;
 	!recorrerStock(Cdr).
 
-+!recorrerStock([]) <- 
++!recorrerStock([]): medicStock(L) <- 
+    true.
+
+
+
++!hayQueRecoger: medicStock([Car|Cdr]) & free <-
 	-free;
 	.println("Recorrido");
     .println("Yendo a reponer stock");
@@ -164,6 +171,12 @@ medicStock([]).
     close(kit);
 	!iniciarStock;
 	+free.
+
++!hayQueRecoger: medicStock([Car|Cdr]) & not free <-
+	.wait(1000);
+	!hayQueRecoger.
+
++!hayQueRecoger: medicStock([]) <- true. // Si no hay ningun medicamento que reponer o suministrar
 
 +!addStock([]) <-
 	.println("TODA EL STOCK REPUESTO");
@@ -305,12 +318,17 @@ medicStock([]).
 //a lo mejor se puede poner otro plan de battery state para cuando sí este en el puesto de carga y se esté cargando.
 
 +!batteryState : battery(B) & B < 50 & free <-
+	-free;
 	.print("Mmmmmmmmmmmmmmmmmmmmme queda poca batería. Voy al puesto de cargaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 	!at(auxiliar, charger);
 	useCharger; //esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería
 	!cargarBateria;
 	quitCharger;
 	!at(auxiliar,afterCharger);
+	+free;
+	!batteryState.
+
++!batteryState : not free <-
 	!batteryState.
 
 
@@ -321,11 +339,7 @@ medicStock([]).
 	+battery(288);
 	.print("Estoy a tope jefe de equipo").
 
-+!batteryState : battery(B) & B < 50 & not free <-
-	!batteryState.
 
-+!batteryState : battery(B) & B > 49 <-
-	!batteryState.
                                      
 +?time(T) : true
   <-  time.check(T).

@@ -315,7 +315,6 @@ public class HouseModel extends GridWorldModel {
 		boolean toRet=false;
 		if(disponibilidadMedicamentos.containsKey(medicina) && kitOpen ){
 			disponibilidadMedicamentos.put(medicina,disponibilidadMedicamentos.get(medicina)+10);
-			System.out.println("Repuesta" + medicina);
 			toRet = true;
 		} else{
 			toRet = false;
