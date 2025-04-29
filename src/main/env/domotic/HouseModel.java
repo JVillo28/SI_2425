@@ -103,6 +103,7 @@ public class HouseModel extends GridWorldModel {
 	Location lDoorBed3	= new Location(GSize*2-1, GSize/4+1); 	
 	Location lDoorBed2	= new Location(GSize+1, GSize/4+1); 	
 	Location lDoorBath2	= new Location(GSize*2-4, GSize/2+1);
+	Location lAfterCharger = new Location (2, GSize-4);
 	
 	// Initialization of the area modeling the home rooms      
 	Area kitchen 	= new Area(0, 0, GSize/2+1, GSize/2-1);

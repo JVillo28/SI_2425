@@ -19,7 +19,7 @@ connect(livingroom, hall, doorSal1).
 connect(hallway, livingroom, doorSal2).       
 connect(livingroom, hallway, doorSal2).   
 
-battery(288). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
+battery(45). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
 
 // initially, robot is free
 free.
@@ -238,11 +238,12 @@ medicRep([]). //Lista de medicinas para reponer
 //a lo mejor se puede poner otro plan de battery state para cuando sí este en el puesto de carga y se esté cargando.
 
 +!batteryState : battery(B) & B < 50 & free <-
-	.print("Me queda poca batería. Voy al puesto de carga");
+	.print("Mmmmmmmmmmmmmmmmmmmmme queda poca batería. Voy al puesto de cargaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 	!at(auxiliar, charger);
 	useCharger; //esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería
 	!cargarBateria;
 	quitCharger;
+	!at(auxiliar,afterCharger);
 	!batteryState.
 
 +!cargarBateria : battery(B) <-
@@ -250,8 +251,7 @@ medicRep([]). //Lista de medicinas para reponer
 	.wait(3000);
 	-battery(B);
 	+battery(288);
-	.print("Estoy a tope jefe de equipo");
-	!cargarBateria.
+	.print("Estoy a tope jefe de equipo").
 
 
 +!batteryState : battery(B) & B > 49 <-
