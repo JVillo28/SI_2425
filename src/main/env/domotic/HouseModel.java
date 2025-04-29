@@ -178,7 +178,7 @@ public class HouseModel extends GridWorldModel {
 		disponibilidadMedicamentos.put(PARACETAMOL,	50);
 		disponibilidadMedicamentos.put(IBUPROFENO,	50);
 		disponibilidadMedicamentos.put(ASPIRINA,	50);
-		disponibilidadMedicamentos.put(DALSI,		50);
+		disponibilidadMedicamentos.put(DALSI,		1);
 		disponibilidadMedicamentos.put(FRENADOL,	50);
  		
 		 

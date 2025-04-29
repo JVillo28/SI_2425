@@ -31,6 +31,7 @@ medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar own
 medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot actualmente
 
 medicRep([]). //Lista de medicinas para reponer
+medicStock([]).
 
 /* Plans */
 
@@ -40,7 +41,8 @@ medicRep([]). //Lista de medicinas para reponer
     .time(H, M, S);
     .findall(consumo(X,T,H,M,S), pauta(X,T), L);
     !iniciarContadores(L);
-	!batteryState;
+	!!batteryState;
+	!!alertaStock;
 	!iniciarStock.
 
 +!iniciarContadores([consumo(Medicina,T,H,M,S)|Cdr]) <-
@@ -119,6 +121,48 @@ medicRep([]). //Lista de medicinas para reponer
 	!comprobarMedicinas(L,StockNuevo);
 	-medicActualOwner(_);
 	!actualizarStock.
+
++!alertaStock: true <-
+	.wait(1000);
+	getStock;
+	.findall([Med,Q],stock(Med,Q),Stock);
+	.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
+	!recorrerStock(Stock).
+
+
++!recorrerStock([[Med,Q]|Cdr]): medicStock(L) <- 
+    if(Q<=2 & not member(Med,L)){
+		.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        -medicStock(L);
+		+medicStock([Med|L]);
+    }
+	!recorrerStock(Cdr).
+
++! recorrerStock([]) <- 
+	.println("Recorrido");
+    .println("Yendo a reponer stock");
+    !at(auxiliar, delivery);
+    .println("Stock recogido");
+    .wait(1000);
+    !at(auxiliar, kit);
+    open(kit);
+	?medicStock(L);
+	!actualizarStock(L);
+    close(kit);
+	!at(auxiliar, initial).
+
++!actualizarStock([]) <-
+	.println("TODA EL STOCK REPUESTO");
+	-medicStock(_);
+	+medicStock([]).
+
++!actualizarStock([Med|MedL]) : battery(B) & B > 0 <- 
+	!consumo(1);
+	.findall(stock(Med,Y), stock(Med,Y), U);
+	.send(owner, untell, stock(Med,Y));
+	.println("ELIMINANDOOOOOOOOOOOOOOO" , Med);
+    .send(owner, tell, U);
+	!actualizarStock(MedL).
 
 +!comprobarMedicinas([Med|Cdr],StockNuevo) <-
 	!comprobarMedicina(Med,StockNuevo);
