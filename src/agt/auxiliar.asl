@@ -19,7 +19,7 @@ connect(livingroom, hall, doorSal1).
 connect(hallway, livingroom, doorSal2).       
 connect(livingroom, hallway, doorSal2).   
 
-battery(45). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
+battery(288). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
 
 // initially, robot is free
 free.
@@ -138,7 +138,7 @@ medicStock([]).
     }
 	!recorrerStock(Cdr).
 
-+! recorrerStock([]) <- 
++!recorrerStock([]) <- 
 	.println("Recorrido");
     .println("Yendo a reponer stock");
     !at(auxiliar, delivery);
@@ -147,22 +147,21 @@ medicStock([]).
     !at(auxiliar, kit);
     open(kit);
 	?medicStock(L);
-	!actualizarStock(L);
+	!addStock(L);
+	!actualizarStock;
     close(kit);
-	!at(auxiliar, initial).
+	!iniciarStock.
 
-+!actualizarStock([]) <-
++!addStock([]) <-
 	.println("TODA EL STOCK REPUESTO");
 	-medicStock(_);
 	+medicStock([]).
 
-+!actualizarStock([Med|MedL]) : battery(B) & B > 0 <- 
++!addStock([Med|MedL]) : battery(B) & B > 0 <- 
 	!consumo(1);
-	.findall(stock(Med,Y), stock(Med,Y), U);
-	.send(owner, untell, stock(Med,Y));
-	.println("ELIMINANDOOOOOOOOOOOOOOO" , Med);
-    .send(owner, tell, U);
-	!actualizarStock(MedL).
+	.println("REPONIENDOO" , Med);
+	reponerStock(Med);
+	!addStock(MedL).
 
 +!comprobarMedicinas([Med|Cdr],StockNuevo) <-
 	!comprobarMedicina(Med,StockNuevo);

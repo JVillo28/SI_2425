@@ -309,8 +309,20 @@ public class HouseModel extends GridWorldModel {
 		System.out.println(disponibilidadMedicamentos.toString());
 		return true;
 	}
-  
+
 	
+	boolean reponerStock(String medicina){
+		boolean toRet=false;
+		if(disponibilidadMedicamentos.containsKey(medicina) && kitOpen ){
+			disponibilidadMedicamentos.put(medicina,disponibilidadMedicamentos.get(medicina)+10);
+			System.out.println("Repuesta" + medicina);
+			toRet = true;
+		} else{
+			toRet = false;
+		} 
+		return toRet;
+		
+	}
 
 
 	// Now we must see if any furniture area is containing the positions x and y.  

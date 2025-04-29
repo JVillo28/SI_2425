@@ -403,6 +403,10 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
             Term xTerm = action.getTerm(0);
 			String medicina = ((Atom) xTerm).getFunctor();
 			result = model.getMedicina(medicina,1);
+		} else if (action.getFunctor().equals("reponerStock")) {
+            Term xTerm = action.getTerm(0);
+			String medicina = ((Atom) xTerm).getFunctor();
+			result = model.reponerStock(medicina);
 		} else if (action.getFunctor().equals("mano_en")) {
             result = model.handInMedicina();
 		} else if (action.getFunctor().equals("getStock")) {
