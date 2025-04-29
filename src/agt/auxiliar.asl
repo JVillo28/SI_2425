@@ -95,7 +95,9 @@ medicRep([]). //Lista de medicinas para reponer
 	!consumo(1);
 	.findall(caducidad(Med,Y), caducidad(Med,Y), U);
 	.send(owner, untell, caducidad(Med,Y));
+	.println("ELIMINANDOOOOOOOOOOOOOOO" , Med);
 	.send(owner, untell, pedidoReposicion(Med));
+	-pedidoReposicion(Med);
     .send(enfermera, untell, caducidad(Med,Y));
     .send(owner, tell, U);
     .send(enfermera, tell, U);
