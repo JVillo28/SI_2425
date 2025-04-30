@@ -403,45 +403,66 @@ public class HouseModel extends GridWorldModel {
 		Location robotLocation = getAgPos(NURSE);
 		Location auxiliarLocation = getAgPos(AUXILIAR);
 
-
-		if (posicionAgente.distance(dest)>0) {
+		// Distance > 0; Si owner prioridad ante todo; Si es robot y quiere ir al auxiliarLocation empuja; Si es auxiliar esquiva
+		if (posicionAgente.distance(dest)>0) { //OWNER
+			
 			if (posicionAgente.x < dest.x && canMoveTo(Ag,posicionAgente.x+1,posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x+1, posicionAgente.y))) {
-				if(posicionInical.x+1==robotLocation.x && posicionInical.y == robotLocation.y){
-					forceMoveAway(NURSE);
-				} else if(posicionInical.x+1==auxiliarLocation.x && posicionInical.y == auxiliarLocation.y){
-					forceMoveAway(AUXILIAR);
+				if(Ag==OWNER){
+					if(posicionInical.x+1==robotLocation.x && posicionInical.y == robotLocation.y){
+						forceMoveAway(NURSE);
+					}
+				}
+				if(Ag==OWNER || Ag==NURSE){
+					if(posicionInical.x+1==auxiliarLocation.x && posicionInical.y == auxiliarLocation.y){
+						forceMoveAway(AUXILIAR);
+					}
 				}
 				posicionAgente.x++;
 				añadirLocalizacionVisitada(Ag, posicionAgente);
 			} else if (posicionAgente.x > dest.x && canMoveTo(Ag,posicionAgente.x-1,posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x-1, posicionAgente.y))) {
-				if(posicionInical.x-1==robotLocation.x && posicionInical.y == robotLocation.y){
-					forceMoveAway(NURSE);
-				} else if(posicionInical.x-1==auxiliarLocation.x && posicionInical.y == auxiliarLocation.y){
-					forceMoveAway(AUXILIAR);
+				if(Ag==OWNER){
+					if(posicionInical.x-1==robotLocation.x && posicionInical.y == robotLocation.y){
+						forceMoveAway(NURSE);
+					}
+				}
+				if(Ag==OWNER || Ag==NURSE){ 
+					if(posicionInical.x-1==auxiliarLocation.x && posicionInical.y == auxiliarLocation.y){
+						forceMoveAway(AUXILIAR);
+					}
 				}
 				posicionAgente.x--;
 				añadirLocalizacionVisitada(Ag, posicionAgente);
+
 			} else if (posicionAgente.y < dest.y && canMoveTo(Ag,posicionAgente.x,posicionAgente.y+1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y+1))) {
-				if(posicionInical.x==robotLocation.x && posicionInical.y+1 == robotLocation.y){
-					forceMoveAway(NURSE);
-				} else if(posicionInical.x==auxiliarLocation.x && posicionInical.y+1 == auxiliarLocation.y){
-					forceMoveAway(AUXILIAR);
+				if(Ag==OWNER){
+					if(posicionInical.x==robotLocation.x && posicionInical.y+1 == robotLocation.y){
+						forceMoveAway(NURSE);
+					}
+				}
+				if(Ag==OWNER || Ag==NURSE){ 
+					if(posicionInical.x==auxiliarLocation.x && posicionInical.y+1 == auxiliarLocation.y){
+						forceMoveAway(AUXILIAR);
+					}
 				}
 				posicionAgente.y++;
 				añadirLocalizacionVisitada(Ag, posicionAgente);
 			} else if (posicionAgente.y > dest.y &&  canMoveTo(Ag,posicionAgente.x,posicionAgente.y-1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y-1))) {  
-				if(posicionInical.x==robotLocation.x && posicionInical.y-1 == robotLocation.y){
-					forceMoveAway(NURSE);
-				} else if(posicionInical.x==auxiliarLocation.x && posicionInical.y-1 == auxiliarLocation.y){
-					forceMoveAway(AUXILIAR);
+				if(Ag==OWNER){
+					if(posicionInical.x==robotLocation.x && posicionInical.y-1 == robotLocation.y){
+						forceMoveAway(NURSE);
+					}
+				}
+				if(Ag==OWNER || Ag==NURSE){ 
+					if(posicionInical.x==auxiliarLocation.x && posicionInical.y-1 == auxiliarLocation.y){
+						forceMoveAway(AUXILIAR);
+					}
 				}
 				posicionAgente.y--;
 				añadirLocalizacionVisitada(Ag, posicionAgente);
-			}
-			
+			}	
 		}
 		
-		if (posicionAgente.equals(posicionInical) && (Ag == NURSE || Ag==AUXILIAR) && posicionAgente.distance(dest)>0) { // agent tries to move in some direction
+		if (posicionAgente.equals(posicionInical) && (Ag == NURSE || Ag==AUXILIAR) && posicionAgente.distance(dest)>0) { // Auxiliar y robot esquivan obstaculos
 			if (posicionAgente.x == dest.x && canMoveTo(Ag, posicionAgente.x + 1, posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x + 1, posicionAgente.y))) {
 				posicionAgente.x++;
 				añadirLocalizacionVisitada(Ag, posicionAgente);
