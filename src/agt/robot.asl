@@ -90,7 +90,9 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
     	-free[source(self)];
 		!at(enfermera, kit);
 		.send(owner,achieve,cancelarMedicacion);
-		open(kit);
+		if(not .belief(open(kit))){
+			open(kit);
+		}
 		.belief(medicPend(L));
 		!cogerTodaMedicina(L);
 		.abolish(medicPend(L));
@@ -315,10 +317,9 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	!comprobarCargadorLibre;
 	
 	while(.belief(at(auxiliar,charger))){
-		.println("En WHILE");
 		.wait(100);
 		-at(auxiliar,charger);
-		comprobarCargadorLibre;
+		!comprobarCargadorLibre;
 	}
 	!at(enfermera, charger);
 	useCharger; //esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería

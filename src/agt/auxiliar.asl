@@ -70,7 +70,7 @@ medicStock([]).
 	!iniciarStock.
 
 
-+!reponerMedicina(Medicina) : battery(B) & B > 0 & medicRep([])<- 
++!reponerMedicina(Medicina) : battery(B) & B > 0 & medicRep([]) & free <- 
 	-free;
 	!consumo(1);
 	-medicRep(_);
@@ -82,18 +82,21 @@ medicStock([]).
     .wait(1000);
     .println("Yendo a la nevera a reponer");
     !at(auxiliar, kit);
-    open(kit);
+	if(not .belief(open(kit))){
+		open(kit);
+	}
+    
 	?medicRep(L);
 	!actualizarMedicina(L);
     close(kit);
 	!at(auxiliar, initial);
 	+free.
 
-+!reponerMedicina(Medicina): battery(B) & B > 0 & medicRep(Med) <-
-	-free;
-	.concat(Med,[Medicina],L);
-	-medicRep(_);
-	+medicRep(L).
++!reponerMedicina(Medicina): medicRep([]) & not free <-
+	.println("Esperando a estar libre para ir a reponer la medicina");
+	.wait(1000);
+	!reponerMedicina(Medicina).
+
 
 +!actualizarMedicina([]) <-
 	.println("TODA LA MEDICINA REPUESTA");
@@ -166,12 +169,14 @@ medicStock([]).
     .println("Stock recogido");
     .wait(1000);
     !at(auxiliar, kit);
-    open(kit);
+	if(not .belief(open(kit))){
+		open(kit);
+	}
 	?medicStock(L);
 	!addStock(L);
 	!actualizarStock;
     close(kit);
-	!iniciarStock;
+	!actualizarStock;
 	+free.
 
 +!hayQueRecoger: medicStock([Car|Cdr]) & not free <-
@@ -183,11 +188,9 @@ medicStock([]).
 +!addStock([]) <-
 	.println("TODA EL STOCK REPUESTO");
 	-medicStock(_);
-	+medicStock([]);
-	+free.
+	+medicStock([]).
 
 +!addStock([Med|MedL]) : battery(B) & B > 0 <- 
-	-free;
 	!consumo(1);
 	.println("REPONIENDOO" , Med);
 	reponerStock(Med);
@@ -396,7 +399,7 @@ medicStock([]).
 	while(.belief(at(enfermera,charger))){
 		.wait(100);
 		-at(enfermera,charger);
-		comprobarCargadorLibre;
+		!comprobarCargadorLibre;
 	}
 	!at(auxiliar, charger);
 	useCharger; //esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería
@@ -407,7 +410,7 @@ medicStock([]).
 	!batteryState.
 
 +!batteryState <-
-	.wait(1000);
+	.wait(100);
 	!batteryState.
 
 +!comprobarCargadorLibre <-

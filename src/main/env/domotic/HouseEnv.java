@@ -202,6 +202,13 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
 		Location lAuxiliar = model.getAgPos(model.AUXILIAR);
 		Location lOwner = model.getAgPos(model.OWNER);
 		
+		if(model.kitOpen){
+			addPercept("owner",ok);
+			addPercept("enfermera",ok);
+			addPercept("auxiliar",ok);
+		}
+		
+
 
         if (lRobot.distance(model.lFridge)==1) {
             addPercept("enfermera", af);

@@ -167,7 +167,9 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	+busy;
 	!at(owner, kit);
 	.send(enfermera,achieve,cancelarMedicacion);
-	open(kit); 
+	if(not .belief(open(kit))){
+		open(kit);
+	}
 	.belief(medicPend(L));
 	!cogerTodaMedicina(L);
 	!consumirMedicina;

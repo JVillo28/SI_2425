@@ -316,7 +316,7 @@ public class HouseModel extends GridWorldModel {
 	
 	boolean reponerStock(String medicina){
 		boolean toRet=false;
-		if(disponibilidadMedicamentos.containsKey(medicina) && kitOpen ){
+		if(disponibilidadMedicamentos.containsKey(medicina)){
 			disponibilidadMedicamentos.put(medicina,disponibilidadMedicamentos.get(medicina)+10);
 			toRet = true;
 		} else{
@@ -329,17 +329,21 @@ public class HouseModel extends GridWorldModel {
 
 	// Now we must see if any furniture area is containing the positions x and y.  
 	boolean canMoveTo (int Ag, int x, int y) {
+		boolean toRet = false;
 		Location siguiente = new Location(x,y);
 		if (Ag == NURSE || Ag == AUXILIAR) {
-			return (isFree(x,y) && !hasObject(WASHER,x,y) && !aTable.contains(siguiente) &&
+			toRet = (isFree(x,y) && !hasObject(WASHER,x,y) && !aTable.contains(siguiente) &&
 		           !aSofa.contains(siguiente) && !hasObject(CHAIR,x,y)) && !hayUnaCama(siguiente) && !hasObject(FRIDGE,x,y) && !hasObject(KIT,x,y);
 		} else {
 			Location robotLocation = getAgPos(NURSE); 
 			Location auxiliarLocation = getAgPos(AUXILIAR);
 			if ((x==robotLocation.x && y==robotLocation.y) || (x==auxiliarLocation.x && y==auxiliarLocation.y)){
-				return true;
-			}else return (isFree(x,y) && !hasObject(WASHER,x,y) && !aTable.contains(siguiente) && !hasObject(BED,x,y) && !hasObject(FRIDGE,x,y) && !hasObject(CHARGER,x,y));
+				if(hasObject(CHARGER,x,y)){
+					toRet = false;
+				}else toRet =  true; 
+			}else toRet = isFree(x,y) && !hasObject(WASHER,x,y) && !aTable.contains(siguiente) && !hasObject(BED,x,y) && !hasObject(FRIDGE,x,y) && !hasObject(CHARGER,x,y);
 		}
+		return toRet;
 	}
 	
 
