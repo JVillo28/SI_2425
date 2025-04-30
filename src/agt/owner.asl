@@ -212,7 +212,7 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 
 +!cogerTodaMedicina([]): medicActualOwner(L) <-
 		.println("He cogido toda la medicina");
-		.send(enfermera,tell,medicActualOwner(L)).
+		.send(auxiliar,tell,medicActualOwner(L)).
 
 /* NADA QUE TOMAR */
 +!tomarMedicina <- 

@@ -22,7 +22,7 @@ connect(livingroom, hallway, doorSal2).
 // initially, robot is free
 free.
                  
-battery(48). 
+battery(50). 
  
 
 medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar owner
@@ -38,7 +38,9 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
     .findall(consumo(X,T,H,M,S), pauta(X,T), L);
     !iniciarContadores(L);
 	!iniciarStock;
-    !tomarMedicina.
+    !!tomarMedicina;
+	!!batteryState.
+
 +!iniciarContadores([consumo(Medicina,T,H,M,S)|Cdr]) <-
     if(S+T>=60){ 
 		+consumo(Medicina,T,H,M+1,S+T-60);
@@ -120,32 +122,37 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	-consumo(Medicacion,_,H,M,S).
 
 
+
 +!cancelarMedicacion: free[source(self)] <-
 	.print("Me prohiben ir a por la medicacion, estoy libre");
-	!comprobarTomaOwner.
+	.send(auxiliar,achieve,comprobarTomaOwner).
+	//!comprobarTomaOwner.
 
-+!cancelarMedicacion: not free[source(self)] & medicActual([]) <-
++!cancelarMedicacion: not free[source(self)] & medicActual([])  <-
 	.print("Me prohiben ir a por la medicacion");
 	.drop_intention(aPorMedicina(_,_,_,_));
 	+free;
-	!comprobarTomaOwner.
+	.send(auxiliar,achieve,comprobarTomaOwner).
+	//!comprobarTomaOwner.
 
 +!cancelarMedicacion: not free[source(self)] & not medicActual([]) <-
 	.print("Me prohiben ir a por la medicacion pero tengo medicina que entregar al owner");
-	!comprobarTomaOwner.
+	.send(auxiliar,achieve,comprobarTomaOwner).
+	//comprobarTomaOwner.
 
+/*
 +!comprobarTomaOwner: not free[source(self)] <- 
 	.println("Esperando a estar libre para comprobar que el owner se ha tomado la medicacion...");
 	.wait(1000);
-	!comprobarTomaOwner.
+	//!comprobarTomaOwner.
 
 +!comprobarTomaOwner: free[source(self)] <- 
 	-free;
 	.println("El owner ha cogido la medicina, comprobando si se la ha tomado...");
 	!at(enfermera,kit);
-	!comprobarStock;
+	//!comprobarStock;
 	+free.
-
+*/
 +!comprobarHora([Med|MedL],H,M,S) <- 
 		!at(enfermera, owner);	
 		.time(HH,MM,SS);
@@ -161,9 +168,10 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 			!darMedicina([Med|MedL],H,M,S);
 		}.
 
+
 +!comprobarHora(_,_,_,_) <-
 	.println("No hora que comprobar").
-
+/*
 +!comprobarStock: not medicActualOwner(L) <- 
 	.print("Esperando a que owner me diga que medicacion ha tomado...");
 	.wait(500);
@@ -208,8 +216,12 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 +!comprobarStockMedicina(MedicinaTomada,Q1,[]) <- 
 	.wait(1000);
 	.print("AVISO! Owner no se ha tomado  ", MedicinaTomada).
+*/
 
-
++!consumo(X) : battery(B) <-
+	.print("-1 de batería: ", B);
+	-battery(B);
+	+battery(B-X).
 
 
 
@@ -264,32 +276,83 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	!at(Ag, P).            
 	                                                   
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomAg) <- 
+	!consumo(1);
 	move_towards(P).  
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP &
 		  connect(RoomAg, RoomP, Door) & not atDoor(Door) <-
+	!consumo(1);
 	move_towards(Door); 
 	!go(P).                     
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP &
 		  connect(RoomAg, RoomP, Door) & not atDoor(Door) <- 
+	!consumo(1);
 	move_towards(P); 
 	!go(P).       
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP &
 		  not connect(RoomAg, RoomP, _) & connect(RoomAg, Room, DoorR) &
 		  connect(Room, RoomP, DoorP) & atDoor(DoorR) <-
+	!consumo(1);
 	move_towards(DoorP); 
 	!go(P). 
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP &
 		  not connect(RoomAg, RoomP, _) & connect(RoomAg, Room, DoorR) &
 		  connect(Room, RoomP, DoorP) & not atDoor(DoorR) <-
+	!consumo(1);
 	move_towards(DoorR); 
 	!go(P). 
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP <- //& not atDoor <-
+	!consumo(1);
 	move_towards(P).                                                          
 -!go(P) <- 
 	.println("¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿ WHAT A FUCK !!!!!!!!!!!!!!!!!!!!");
 	.println("..........SOMETHING GOES WRONG......").                                        
 	                                                                        
++!batteryState : battery(B) & B < 100 & free <-
+	-free;
+	.print("Mmmmmmmmmmmmmmmmmmmmme queda poca batería. Voy al puesto de cargaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+	!at(enfermera, waitCharger);
+	
+	!comprobarCargadorLibre;
+	
+	while(.belief(at(auxiliar,charger))){
+		.println("En WHILE");
+		.wait(100);
+		-at(auxiliar,charger);
+		comprobarCargadorLibre;
+	}
+	!at(enfermera, charger);
+	useCharger; //esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería
+	!cargarBateria;
+	quitCharger;
+	!at(enfermera,afterChargerRobot);
+	+free;
+	!batteryState.
 
-                                     
++!batteryState : not free <-
+	.println("Estoy ocupado, todavia no puedo ir a cargar...");
+	.wait(1000);
+	!batteryState.
+
++!batteryState : free <-
+	.wait(1000);
+	!batteryState.
+
++!batteryState  <-
+	!batteryState.
+
+
+-!batteryState <-
+	.println("ME HAN JODIDO LA BATERIA").
+
++!comprobarCargadorLibre <-
+	.send(auxiliar,askOne, at(auxiliar, charger)).
+
++!cargarBateria : battery(B) <-
+	.print("CAAAARRRRGAAAAANNNDOOOOOOOOO.....");
+	.wait(3000);
+	-battery(B);
+	+battery(288);
+	.print("Estoy a tope jefe de equipo").
+                                                                   
 +?time(T) : true
   <-  time.check(T).

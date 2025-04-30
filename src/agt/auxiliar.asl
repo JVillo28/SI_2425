@@ -19,8 +19,9 @@ connect(livingroom, hall, doorSal1).
 connect(hallway, livingroom, doorSal2).       
 connect(livingroom, hallway, doorSal2).   
 
-battery(288). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
-
+battery(50). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
+batteryMax(288).
+contador(0).
 // initially, robot is free
 free.
                  
@@ -40,6 +41,7 @@ medicStock([]).
     .print("Iniciando recordatorios de medicamentos...");
     .time(H, M, S);
     .findall(consumo(X,T,H,M,S), pauta(X,T), L);
+
     !iniciarContadores(L);
 	!iniciarStock;
 	!!alertaStock;
@@ -315,13 +317,87 @@ medicStock([]).
 	-battery(B);
 	+battery(B-X).
 
+/*******************************************/
+/*********** COMPROBAR TOMA MEDICINAS ******/
+/*******************************************/
+
++!comprobarTomaOwner: not free[source(self)] <- 
+	.println("Esperando a estar libre para comprobar que el owner se ha tomado la medicacion...");
+	.wait(1000);
+	!comprobarTomaOwner.
+
++!comprobarTomaOwner: free[source(self)] <- 
+	-free;
+	.println("El owner ha cogido la medicina, comprobando si se la ha tomado...");
+	!at(auxiliar,kit);
+	!comprobarStock;
+	+free.
+
++!comprobarStock: not medicActualOwner(L) <- 
+	.print("Esperando a que owner me diga que medicacion ha tomado...");
+	.wait(500);
+	!comprobarStock.
+
++!comprobarStock: medicActualOwner(L) <-
+	.println(L);
+	getStock;
+	.findall([Med,Q],stock(Med,Q),StockNuevo);
+	!comprobarMedicinas(L,StockNuevo);
+	-medicActualOwner(_);
+	!actualizarStock.
+
++!comprobarMedicinas([Med|Cdr],StockNuevo) <-
+	!comprobarMedicina(Med,StockNuevo);
+	!comprobarMedicinas(Cdr,StockNuevo).
+
++!comprobarMedicinas([],StockNuevo) <- .print("Todas medicinas comprobadas").
+
++!comprobarMedicina(MedicinaTomada,[[MedicinaTomada,Q1]|Cdr1]) <-
+	.belief(stockActual(L));
+	!comprobarStockMedicina(MedicinaTomada,Q1,L).
+	
+
++!comprobarMedicina(MedicinaTomada,[[_,_]|Cdr1]) <-
+	!comprobarMedicina(MedicinaTomada,Cdr1).
+
+
++!comprobarStockMedicina(MedicinaTomada,Q1,[[MedicinaTomada,Q2]|Cdr]) <- 
+	.wait(1000);
+	if (Q1 < Q2){
+		.print("Owner se ha tomado medicina ",MedicinaTomada);
+	}else{
+		.print("AVISO! Owner no se ha tomado  ", MedicinaTomada);
+	}
+	.wait(500).
+
++!comprobarStockMedicina(MedicinaTomada,Q1,[[_,_]|Cdr]) <- 
+	.wait(1000);
+	!comprobarStockMedicina(MedicinaTomada,Q1,Cdr).
+
++!comprobarStockMedicina(MedicinaTomada,Q1,[]) <- 
+	.wait(1000);
+	.print("AVISO! Owner no se ha tomado  ", MedicinaTomada).
+
+
+/*******************************************/
+/***************** BATERIA******************/
+/*******************************************/
+
 //a lo mejor se puede poner otro plan de battery state para cuando sí este en el puesto de carga y se esté cargando.
 
 +!batteryState : battery(B) & B < 50 & free <-
 	-free;
 	.print("Mmmmmmmmmmmmmmmmmmmmme queda poca batería. Voy al puesto de cargaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 	!at(auxiliar, waitCharger);
-	.wait(1000); //PROBAR
+	// Si hay otro robot espero a que este llibre
+	
+	!comprobarCargadorLibre;
+	
+	while(.belief(at(enfermera,charger))){
+		.wait(100);
+		-at(enfermera,charger);
+		comprobarCargadorLibre;
+	}
 	!at(auxiliar, charger);
 	useCharger; //esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería
 	!cargarBateria;
@@ -330,18 +406,31 @@ medicStock([]).
 	+free;
 	!batteryState.
 
-+!batteryState : not free <-
++!batteryState <-
+	.wait(1000);
 	!batteryState.
 
++!comprobarCargadorLibre <-
+	.send(enfermera,askOne, at(enfermera, charger)).
 
-+!cargarBateria : battery(B) <-
++!cargarBateria : battery(B) & batteryMax(BMax)<-
 	.print("CAAAARRRRGAAAAANNNDOOOOOOOOO.....");
 	.wait(3000);
 	-battery(B);
-	+battery(288);
+	+battery(BMax);
 	.print("Estoy a tope jefe de equipo").
 
 
-                                     
++!cancelarCargarBateria: contador(T) & batteryMax(B) <-
+	.println("Me han cancealado la carga, me quito un 5%");
+	-contador(_);
+	+contador(T+1);
+	if(T==3){ //Caso que queremos decrementar
+		-batteryMax(_);
+		+batteryMax(B*0.95);
+		-contador(_);
+		+contador(0);
+	}.
+
 +?time(T) : true
   <-  time.check(T).
