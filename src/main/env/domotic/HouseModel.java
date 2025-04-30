@@ -103,8 +103,11 @@ public class HouseModel extends GridWorldModel {
 	Location lDoorBed3	= new Location(GSize*2-1, GSize/4+1); 	
 	Location lDoorBed2	= new Location(GSize+1, GSize/4+1); 	
 	Location lDoorBath2	= new Location(GSize*2-4, GSize/2+1);
-	Location lAfterCharger = new Location (2, GSize-4);
+	Location lAfterChargerRobot = new Location (2, GSize-7);
+	Location lAfterChargerAuxiliar = new Location (2, GSize-4);
+	Location lWaitCharger = new Location(1, GSize-5);
 	
+		
 	// Initialization of the area modeling the home rooms      
 	Area kitchen 	= new Area(0, 0, GSize/2+1, GSize/2-1);
 	Area livingroom	= new Area(GSize/3, GSize/2+1, GSize, GSize-1);
@@ -128,7 +131,7 @@ public class HouseModel extends GridWorldModel {
         super(2*GSize, GSize, 4);
                                                                            
         // Initial location for the owner and the nurse
-        setAgPos(NURSE, 19, 10);
+        setAgPos(NURSE, 2, GSize-7);
 		setAgPos(AUXILIAR, 0, 3);  
 		setAgPos(OWNER, 23, 8);
 

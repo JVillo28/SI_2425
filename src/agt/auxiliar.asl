@@ -19,7 +19,7 @@ connect(livingroom, hall, doorSal1).
 connect(hallway, livingroom, doorSal2).       
 connect(livingroom, hallway, doorSal2).   
 
-battery(48). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
+battery(288). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
 
 // initially, robot is free
 free.
@@ -320,11 +320,13 @@ medicStock([]).
 +!batteryState : battery(B) & B < 50 & free <-
 	-free;
 	.print("Mmmmmmmmmmmmmmmmmmmmme queda poca batería. Voy al puesto de cargaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+	!at(auxiliar, waitCharger);
+	.wait(1000); //PROBAR
 	!at(auxiliar, charger);
 	useCharger; //esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería
 	!cargarBateria;
 	quitCharger;
-	!at(auxiliar,afterCharger);
+	!at(auxiliar,afterChargerAuxiliar);
 	+free;
 	!batteryState.
 

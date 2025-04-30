@@ -22,7 +22,7 @@ connect(livingroom, hallway, doorSal2).
 // initially, robot is free
 free.
                  
-battery(288). 
+battery(48). 
  
 
 medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar owner

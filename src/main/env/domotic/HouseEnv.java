@@ -27,7 +27,8 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
     public static final Literal ad   = Literal.parseLiteral("at(enfermera,delivery)");
 	public static final Literal ac   = Literal.parseLiteral("at(enfermera, charger)");
 	public static final Literal ak   = Literal.parseLiteral("at(enfermera, kit)");
-	public static final Literal oar  = Literal.parseLiteral("at(enfermera, afterCharger)");
+	public static final Literal oar  = Literal.parseLiteral("at(enfermera, afterChargerRobot)");
+	public static final Literal wec  = Literal.parseLiteral("at(enfermera, waitCharger)");
 	
 
 
@@ -37,7 +38,8 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
 	public static final Literal ai   =  Literal.parseLiteral("at(auxiliar,initial)");
     public static final Literal aac   = Literal.parseLiteral("at(auxiliar, charger)");
 	public static final Literal aak   = Literal.parseLiteral("at(auxiliar, kit)");
-	public static final Literal aca  = Literal.parseLiteral("at(auxiliar, afterCharger)");
+	public static final Literal aca  = Literal.parseLiteral("at(auxiliar, afterChargerAuxiliar)");
+	public static final Literal wac  = Literal.parseLiteral("at(auxiliar, waitCharger)");
 	
     public static final Literal oaf  = Literal.parseLiteral("at(owner,fridge)");
     public static final Literal oac1 = Literal.parseLiteral("at(owner,chair1)");
@@ -178,8 +180,12 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
 		addPercept(Literal.parseLiteral("atRoom(bed3, "+bed3Place+")"));
 		String kitPlace = model.getRoom(model.lKit);
 		addPercept(Literal.parseLiteral("atRoom(kit, "+kitPlace+")"));
-		String afterChargerPlace = model.getRoom(model.lAfterCharger);
-		addPercept(Literal.parseLiteral("atRoom(afterCharger, "+afterChargerPlace+")"));
+		String afterChargerPlaceRobot = model.getRoom(model.lAfterChargerRobot);
+		addPercept(Literal.parseLiteral("atRoom(afterChargerRobot, "+afterChargerPlaceRobot+")"));
+		String afterChargerPlaceAuxiliar = model.getRoom(model.lAfterChargerAuxiliar);
+		addPercept(Literal.parseLiteral("atRoom(afterChargerAuxiliar, "+afterChargerPlaceAuxiliar+")"));
+		String waitChargerPlace = model.getRoom(model.lWaitCharger);
+		addPercept(Literal.parseLiteral("atRoom(waitCharger, "+waitChargerPlace+")"));
 	}
 	                                                       
     /** creates the agents percepts based on the HouseModel */
@@ -204,14 +210,23 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
 		if (lAuxiliar.distance(model.lFridge)==1) {
             addPercept("auxiliar", aaf);
         }
-
-		if (lAuxiliar.distance(model.lAfterCharger)==0) {
+		
+		if (lAuxiliar.distance(model.lAfterChargerAuxiliar)==0) {
 			addPercept("auxiliar", aca);
 		}
 
-		if (lRobot.distance(model.lAfterCharger)==0) {
+		if (lRobot.distance(model.lAfterChargerRobot)==0) {
 			addPercept("enfermera", oar);
 		}
+
+		if (lAuxiliar.distance(model.lWaitCharger)==0) {
+			addPercept("auxiliar", wac);
+		}
+
+		if (lRobot.distance(model.lWaitCharger)==0) {
+			addPercept("enfermera", wec);
+		}
+
 
         if (lOwner.distance(model.lFridge)==1) {
             addPercept("owner", oaf);
@@ -343,7 +358,11 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
 				break;     
 				case "delivery": dest = model.lDeliver; 
 				break;
-				case "afterCharger": dest = model.lAfterCharger;
+				case "afterChargerRobot": dest = model.lAfterChargerRobot;
+				break;
+				case "afterChargerAuxiliar": dest = model.lAfterChargerAuxiliar;
+				break;
+				case "waitCharger": dest = model.lWaitCharger;
 				break;
 				case "charger": dest = model.lCharger;
 				break;
