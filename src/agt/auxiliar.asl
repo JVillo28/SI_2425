@@ -36,7 +36,7 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 
 /* Plans */
 
-
+// INICIALIZACIÓN
 +!inicia : true <- 
     .print("Iniciando recordatorios de medicamentos...");
     .time(H, M, S);
@@ -65,99 +65,65 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	.findall([Med,Q],stock(Med,Q),L);
 	+stockActual(L).
 
+// BATERÍA
+
++!consumo(X) : battery(B) <-
+	.print("-1 de batería: ", B);
+	-battery(B);
+	+battery(B-X).
+
++!batteryState : battery(B) & B < 50 & free <-
+	-free;
+	.print("Mmmmmmmmmmmmmmmmmmmmme queda poca batería. Voy al puesto de cargaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+	!at(auxiliar, waitCharger);
+	// Si hay otro robot espero a que este llibre
+	
+	!comprobarCargadorLibre;
+	
+	while(.belief(at(enfermera,charger))){
+		.wait(100);
+		-at(enfermera,charger);
+		!comprobarCargadorLibre;
+	}
+	!at(auxiliar, charger);
+	useCharger; //esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería
+	!cargarBateria;
+	quitCharger;
+	!at(auxiliar,afterChargerAuxiliar);
+	+free;
+	!batteryState.
+
++!batteryState <-
+	.wait(100);
+	!batteryState.
+
++!comprobarCargadorLibre <-
+	.send(enfermera,askOne, at(enfermera, charger)).
+
++!cargarBateria : battery(B) & batteryMax(BMax)<-
+	.print("CAAAARRRRGAAAAANNNDOOOOOOOOO.....");
+	.wait(3000);
+	-battery(B);
+	+battery(BMax);
+	.print("Estoy a tope jefe de equipo").
+
+
++!cancelarCargarBateria: contador(T) & batteryMax(B) <-
+	.println("Me han cancealado la carga, me quito un 5%");
+	-contador(_);
+	+contador(T+1);
+	if(T==3){ //Caso que queremos decrementar
+		-batteryMax(_);
+		+batteryMax(B*0.95);
+		-contador(_);
+		+contador(0);
+	}.
+
+// STOCK
+
 +!actualizarStock <-
 	-stockActual(L);
 	!iniciarStock.
-
-
-+!reponerMedicinas : battery(B) & B > 0 & medicRep(Med) & free <- 
-	-free;
-	!consumo(1);
-    .println("Las medicinas ", Med, " van a caducar");
-    .println("Yendo a la zona de entrega");
-    !at(auxiliar, delivery);
-	?medicRep(L);
-	-medicRep(_);
-	+medicRep([]);
-	-medicActual(_);
-	+medicActual(L);
-    .println("Medicinas",L,"recogidas");
-    .wait(1000);
-    .println("Yendo al kit a reponer");
-    !at(auxiliar, kit);
-	if(not .belief(open(kit))){
-		open(kit);
-	}
-	!actualizarMedicina(L);
-	if(not .belief(close(kit))){
-		close(kit);
-	}
-	+free.
-+!reponerMedicinas: not free <-
-	!reponerMedicinas.
-
-+!reponerMedicina(Medicina): medicRep([]) & free <-
-	.println("Estoy libre, va a caducar la medicina: ",Medicina);
-	-medicRep(_);
-	+medicRep([Medicina]);
-	!reponerMedicinas.
-
-+!reponerMedicina(Medicina): not medicRep([]) & free <-
-	.println("Estoy libre, va a caducar la medicina: ",Medicina);
-	?medicRep(L);
-	-medicRep(_);
-	+medicRep([Medicina|L]).
-
-+!reponerMedicina(Medicina): medicRep([]) & not free <-
-	.println("Esperando a estar libre para ir a reponer la medicina",Medicina);
-	-medicRep(_);
-	+medicRep([Medicina]);
-	.wait(1000);
-	!reponerMedicinas.
-
-+!reponerMedicina(Medicina): not medicRep([]) & not free <-
-	.println("Añadiendo medicina:",Medicina," a la lista de reposicion");
-	?medicRep(L);
-	-medicRep(_);
-	+medicRep([Medicina|L]).
-
-
-
-
-+!actualizarMedicina([]) <-
-	.println("TODA LA MEDICINA REPUESTA");
-	-medicActual(_);
-	+medicActual([]);
-	+free.
-
-+!actualizarMedicina([Med|MedL]) : battery(B) & B > 0 <- 
-	!consumo(1);
-	.findall(caducidad(Med,Y), caducidad(Med,Y), U);
-	.send(owner, untell, caducidad(Med,Y));
-	.println("ELIMINANDOOOOOOOOOOOOOOO" , Med);
-	.send(owner, achieve, cancelarPedido(Med));
-    .send(enfermera, untell, caducidad(Med,Y));
-    .send(owner, tell, U);
-    .send(enfermera, tell, U);
-	reponerMedCaducidad(Med);
-	!actualizarStock;
-	!actualizarMedicina(MedL).
-
-+!comprobarHora(_,_,_,_) <-
-	.println("No hora que comprobar").
-
-+!comprobarStock: not medicActualOwner(L) <- 
-	.print("Esperando a que owner me diga que medicacion ha tomado...");
-	.wait(500);
-	!comprobarStock.
-
-+!comprobarStock: medicActualOwner(L) <-
-	.println(L);
-	getStock;
-	.findall([Med,Q],stock(Med,Q),StockNuevo);
-	!comprobarMedicinas(L,StockNuevo);
-	-medicActualOwner(_);
-	!actualizarStock.
 
 +!alertaStock: medicStock([]) <-
 	.wait(1000);
@@ -223,84 +189,80 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	reponerStock(Med);
 	!addStock(MedL).
 
-+!comprobarMedicinas([Med|Cdr],StockNuevo) <-
-	!comprobarMedicina(Med,StockNuevo);
-	!comprobarMedicinas(Cdr,StockNuevo).
 
-+!comprobarMedicinas([],StockNuevo) : battery(B) & B > 0 <- 
-	!consumo(1); 
-	.print("Todas medicinas comprobadas").
+// CADUCIDAD
 
-+!comprobarMedicina(MedicinaTomada,[[MedicinaTomada,Q1]|Cdr1]) <-
-	.belief(stockActual(L));
-	!comprobarStockMedicina(MedicinaTomada,Q1,L).
-	
-
-+!comprobarMedicina(MedicinaTomada,[[_,_]|Cdr1]) <-
-	!comprobarMedicina(MedicinaTomada,Cdr1).
-
-
-+!comprobarStockMedicina(MedicinaTomada,Q1,[[MedicinaTomada,Q2]|Cdr]) <- 
++!reponerMedicinas : battery(B) & B > 0 & medicRep(Med) & free <- 
 	-free;
-	if (Q1 < Q2){
-		.print("Owner se ha tomado medicina ",MedicinaTomada);
-	}else{
-		.print("AVISO! Owner no se ha tomado  ", MedicinaTomada);
-	}
-	.wait(1000);
-	+free.
-
-+!comprobarStockMedicina(MedicinaTomada,Q1,[[_,_]|Cdr]) : battery(B) & B > 0 <- 
 	!consumo(1);
-	!comprobarStockMedicina(MedicinaTomada,Q1,Cdr).
+    .println("Las medicinas ", Med, " van a caducar");
+    .println("Yendo a la zona de entrega");
+    !at(auxiliar, delivery);
+	?medicRep(L);
+	-medicRep(_);
+	+medicRep([]);
+	-medicActual(_);
+	+medicActual(L);
+    .println("Medicinas",L,"recogidas");
+    .wait(1000);
+    .println("Yendo al kit a reponer");
+    !at(auxiliar, kit);
+	if(not .belief(open(kit))){
+		open(kit);
+	}
+	!actualizarMedicina(L);
+	if(not .belief(close(kit))){
+		close(kit);
+	}
+	+free.
++!reponerMedicinas: not free <-
+	!reponerMedicinas.
 
-+!enviarMedicinaPendiente: medicPend(L) <-
-	.send(owner,achieve,medicinaRecibida(L)).
++!reponerMedicina(Medicina): medicRep([]) & free <-
+	.println("Estoy libre, va a caducar la medicina: ",Medicina);
+	-medicRep(_);
+	+medicRep([Medicina]);
+	!reponerMedicinas.
 
-+!darMedicina([],H,M,S) <-
-	.println("TODA LA MEDICINA TOMADA");
++!reponerMedicina(Medicina): not medicRep([]) & free <-
+	.println("Estoy libre, va a caducar la medicina: ",Medicina);
+	?medicRep(L);
+	-medicRep(_);
+	+medicRep([Medicina|L]).
+
++!reponerMedicina(Medicina): medicRep([]) & not free <-
+	.println("Esperando a estar libre para ir a reponer la medicina",Medicina);
+	-medicRep(_);
+	+medicRep([Medicina]);
+	.wait(1000);
+	!reponerMedicinas.
+
++!reponerMedicina(Medicina): not medicRep([]) & not free <-
+	.println("Añadiendo medicina:",Medicina," a la lista de reposicion");
+	?medicRep(L);
+	-medicRep(_);
+	+medicRep([Medicina|L]).
+
++!actualizarMedicina([]) <-
+	.println("TODA LA MEDICINA REPUESTA");
 	-medicActual(_);
 	+medicActual([]);
 	+free.
 
-+!darMedicina([Med|MedL],H,M,S) : battery(B) & B > 0 <- 
-	-free;
++!actualizarMedicina([Med|MedL]) : battery(B) & B > 0 <- 
 	!consumo(1);
-	.time(HH,MM,SS);
-	.println("Dando al owner la medicina: ", Med, " a la hora: H:",HH,":",MM,":",SS);
-	!darMedicina(MedL,H,M,S).
+	.findall(caducidad(Med,Y), caducidad(Med,Y), U);
+	.send(owner, untell, caducidad(Med,Y));
+	.println("ELIMINANDOOOOOOOOOOOOOOO" , Med);
+	.send(owner, achieve, cancelarPedido(Med));
+    .send(enfermera, untell, caducidad(Med,Y));
+    .send(owner, tell, U);
+    .send(enfermera, tell, U);
+	reponerMedCaducidad(Med);
+	!actualizarStock;
+	!actualizarMedicina(MedL).
 
-
-+!addMedicinaPendiente(Medicina): medicPend(Med) <-
-	.concat(Med,[Medicina],L);
-	-medicPend(_);
-	+medicPend(L).
-
-+!addMedicinaActual(Medicina): medicActual(Med) <-
-	.concat(Med,[Medicina],L);
-	-medicActual(_);
-	+medicActual(L).
-
-
-
-
-+!cogerTodaMedicina([Car|Cdr]) <-
-		-free;
-		.println("Cojo la medicina ",Car);
-		getMedicina(Car);
-		!addMedicinaActual(Car);
-		!cogerTodaMedicina(Cdr).
-
-+!cogerTodaMedicina([]) : battery(B) & B > 0 <- 
-		!consumo(1);
-		.println("He cogido toda la medicina");
-		!actualizarStock;
-		+free.
-
-+!medicinaRecibida(L) <- 
-	.println("Medicamentos actualizados");
-	-medicPend(_);
-	+medicPend(L).
+// CÓDIGO BÁSICO
 
 +!at(Ag, P) : at(Ag, P) <- 
 	.println(Ag, " is at ",P);
@@ -341,126 +303,6 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	.println("¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿ WHAT A FUCK !!!!!!!!!!!!!!!!!!!!");
 	.println("..........SOMETHING GOES WRONG......").                                        
 	                                                                        
-
-+!consumo(X) : battery(B) <-
-	.print("-1 de batería: ", B);
-	-battery(B);
-	+battery(B-X).
-
-/*******************************************/
-/*********** COMPROBAR TOMA MEDICINAS ******/
-/*******************************************/
-/*
-+!comprobarTomaOwner: not free[source(self)] <- 
-	.println("Esperando a estar libre para comprobar que el owner se ha tomado la medicacion...");
-	.wait(1000);
-	!comprobarTomaOwner.
-
-+!comprobarTomaOwner: free[source(self)] <- 
-	-free;
-	.println("El owner ha cogido la medicina, comprobando si se la ha tomado...");
-	!at(auxiliar,kit);
-	!comprobarStock;
-	+free.
-
-+!comprobarStock: not medicActualOwner(L) <- 
-	.print("Esperando a que owner me diga que medicacion ha tomado...");
-	.wait(500);
-	!comprobarStock.
-
-+!comprobarStock: medicActualOwner(L) <-
-	.println(L);
-	getStock;
-	.findall([Med,Q],stock(Med,Q),StockNuevo);
-	!comprobarMedicinas(L,StockNuevo);
-	-medicActualOwner(_);
-	!actualizarStock.
-
-+!comprobarMedicinas([Med|Cdr],StockNuevo) <-
-	!comprobarMedicina(Med,StockNuevo);
-	!comprobarMedicinas(Cdr,StockNuevo).
-
-+!comprobarMedicinas([],StockNuevo) <- .print("Todas medicinas comprobadas").
-
-+!comprobarMedicina(MedicinaTomada,[[MedicinaTomada,Q1]|Cdr1]) <-
-	.belief(stockActual(L));
-	!comprobarStockMedicina(MedicinaTomada,Q1,L).
-	
-
-+!comprobarMedicina(MedicinaTomada,[[_,_]|Cdr1]) <-
-	!comprobarMedicina(MedicinaTomada,Cdr1).
-
-
-+!comprobarStockMedicina(MedicinaTomada,Q1,[[MedicinaTomada,Q2]|Cdr]) <- 
-	.wait(1000);
-	if (Q1 < Q2){
-		.print("Owner se ha tomado medicina ",MedicinaTomada);
-	}else{
-		.print("AVISO! Owner no se ha tomado  ", MedicinaTomada);
-	}
-	.wait(500).
-
-+!comprobarStockMedicina(MedicinaTomada,Q1,[[_,_]|Cdr]) <- 
-	.wait(1000);
-	!comprobarStockMedicina(MedicinaTomada,Q1,Cdr).
-
-+!comprobarStockMedicina(MedicinaTomada,Q1,[]) <- 
-	.wait(1000);
-	.print("AVISO! Owner no se ha tomado  ", MedicinaTomada).
-
-*/
-/*******************************************/
-/***************** BATERIA******************/
-/*******************************************/
-
-//a lo mejor se puede poner otro plan de battery state para cuando sí este en el puesto de carga y se esté cargando.
-
-+!batteryState : battery(B) & B < 50 & free <-
-	-free;
-	.print("Mmmmmmmmmmmmmmmmmmmmme queda poca batería. Voy al puesto de cargaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-	!at(auxiliar, waitCharger);
-	// Si hay otro robot espero a que este llibre
-	
-	!comprobarCargadorLibre;
-	
-	while(.belief(at(enfermera,charger))){
-		.wait(100);
-		-at(enfermera,charger);
-		!comprobarCargadorLibre;
-	}
-	!at(auxiliar, charger);
-	useCharger; //esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería
-	!cargarBateria;
-	quitCharger;
-	!at(auxiliar,afterChargerAuxiliar);
-	+free;
-	!batteryState.
-
-+!batteryState <-
-	.wait(100);
-	!batteryState.
-
-+!comprobarCargadorLibre <-
-	.send(enfermera,askOne, at(enfermera, charger)).
-
-+!cargarBateria : battery(B) & batteryMax(BMax)<-
-	.print("CAAAARRRRGAAAAANNNDOOOOOOOOO.....");
-	.wait(3000);
-	-battery(B);
-	+battery(BMax);
-	.print("Estoy a tope jefe de equipo").
-
-
-+!cancelarCargarBateria: contador(T) & batteryMax(B) <-
-	.println("Me han cancealado la carga, me quito un 5%");
-	-contador(_);
-	+contador(T+1);
-	if(T==3){ //Caso que queremos decrementar
-		-batteryMax(_);
-		+batteryMax(B*0.95);
-		-contador(_);
-		+contador(0);
-	}.
 
 +?time(T) : true
   <-  time.check(T).
