@@ -397,19 +397,27 @@ public class HouseModel extends GridWorldModel {
     }
 
 
-	public void forceMoveAway(int Ag) {
+	public void forceMoveAway(int master,int Ag) {
 		Location posicionAgente = getAgPos(Ag);
-		
+		Location posicionMaster = getAgPos(master);
 		if (canMoveTo(Ag,posicionAgente.x+1,posicionAgente.y)) {
 			posicionAgente.x++;
+			setAgPos(Ag, posicionAgente);
 		} else if (canMoveTo(Ag,posicionAgente.x-1,posicionAgente.y)) {
 			posicionAgente.x--;
+			setAgPos(Ag, posicionAgente);
 		} else if (canMoveTo(Ag,posicionAgente.x,posicionAgente.y+1)) {
 			posicionAgente.y++;
+			setAgPos(Ag, posicionAgente);
 		} else if (canMoveTo(Ag,posicionAgente.x,posicionAgente.y-1)) {  
 			posicionAgente.y--;
+			setAgPos(Ag, posicionAgente);
+		} else{
+			setAgPos(Ag, posicionMaster);
+			setAgPos(master, posicionAgente);
 		}
-		setAgPos(Ag, posicionAgente);
+		
+		
 	}
 
 
@@ -425,12 +433,12 @@ public class HouseModel extends GridWorldModel {
 			if (posicionAgente.x < dest.x && canMoveTo(Ag,posicionAgente.x+1,posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x+1, posicionAgente.y))) {
 				if(Ag==OWNER){
 					if(posicionInical.x+1==robotLocation.x && posicionInical.y == robotLocation.y){
-						forceMoveAway(NURSE);
+						forceMoveAway(Ag,NURSE);
 					}
 				}
 				if(Ag==OWNER || Ag==NURSE){
 					if(posicionInical.x+1==auxiliarLocation.x && posicionInical.y == auxiliarLocation.y){
-						forceMoveAway(AUXILIAR);
+						forceMoveAway(Ag,AUXILIAR);
 					}
 				}
 				posicionAgente.x++;
@@ -438,12 +446,12 @@ public class HouseModel extends GridWorldModel {
 			} else if (posicionAgente.x > dest.x && canMoveTo(Ag,posicionAgente.x-1,posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x-1, posicionAgente.y))) {
 				if(Ag==OWNER){
 					if(posicionInical.x-1==robotLocation.x && posicionInical.y == robotLocation.y){
-						forceMoveAway(NURSE);
+						forceMoveAway(Ag,NURSE);
 					}
 				}
 				if(Ag==OWNER || Ag==NURSE){ 
 					if(posicionInical.x-1==auxiliarLocation.x && posicionInical.y == auxiliarLocation.y){
-						forceMoveAway(AUXILIAR);
+						forceMoveAway(Ag,AUXILIAR);
 					}
 				}
 				posicionAgente.x--;
@@ -452,12 +460,12 @@ public class HouseModel extends GridWorldModel {
 			} else if (posicionAgente.y < dest.y && canMoveTo(Ag,posicionAgente.x,posicionAgente.y+1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y+1))) {
 				if(Ag==OWNER){
 					if(posicionInical.x==robotLocation.x && posicionInical.y+1 == robotLocation.y){
-						forceMoveAway(NURSE);
+						forceMoveAway(Ag,NURSE);
 					}
 				}
 				if(Ag==OWNER || Ag==NURSE){ 
 					if(posicionInical.x==auxiliarLocation.x && posicionInical.y+1 == auxiliarLocation.y){
-						forceMoveAway(AUXILIAR);
+						forceMoveAway(Ag,AUXILIAR);
 					}
 				}
 				posicionAgente.y++;
@@ -465,12 +473,12 @@ public class HouseModel extends GridWorldModel {
 			} else if (posicionAgente.y > dest.y &&  canMoveTo(Ag,posicionAgente.x,posicionAgente.y-1) && !haEstado(Ag, new Location(posicionAgente.x, posicionAgente.y-1))) {  
 				if(Ag==OWNER){
 					if(posicionInical.x==robotLocation.x && posicionInical.y-1 == robotLocation.y){
-						forceMoveAway(NURSE);
+						forceMoveAway(Ag,NURSE);
 					}
 				}
 				if(Ag==OWNER || Ag==NURSE){ 
 					if(posicionInical.x==auxiliarLocation.x && posicionInical.y-1 == auxiliarLocation.y){
-						forceMoveAway(AUXILIAR);
+						forceMoveAway(Ag,AUXILIAR);
 					}
 				}
 				posicionAgente.y--;
