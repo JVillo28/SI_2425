@@ -22,8 +22,9 @@ connect(livingroom, hallway, doorSal2).
 // initially, robot is free
 free.
                  
-battery(50). 
- 
+battery(288). 
+batteryMax(288).
+contador(0). 
 
 medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar owner
 medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot actualmente
@@ -31,6 +32,7 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 
 /* Plans */
 
+// INICIALIZACIÓN
 
 +!inicia : true <- 
     .print("Iniciando recordatorios de medicamentos...");
@@ -53,6 +55,84 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
     !iniciarContadores(Cdr).
 +!iniciarContadores([]) <- .print("Inicialización completada").
 
++!addPauta(pauta(Medicacion,Tiempo)) <-
+	.println("Se me ha añadido la pauta: ",Medicacion," tiempo: ",Tiempo);
+	.time(H,M,S);
+	+pauta(Medicacion,Tiempo);
+	+consumo(Medicacion,Tiempo,H,M,S).
+
++!deletePauta(pauta(Medicacion,_)) <-
+	.println("Se ha eliminado la pauta: ",Medicacion);
+	.time(H,M,S);
+	-pauta(Medicacion,_);
+	-consumo(Medicacion,_,H,M,S).
+
+// BATERÍA
+
++!consumo(X) : battery(B) <-
+	.print("-1 de batería: ", B);
+	-battery(B);
+	+battery(B-X).
+
++!batteryState : battery(B) & B < 100 & free <-
+	-free;
+	.print("Mmmmmmmmmmmmmmmmmmmmme queda poca batería. Voy al puesto de cargaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+	!at(enfermera, waitCharger);
+	
+	!comprobarCargadorLibre;
+	
+	while(.belief(at(auxiliar,charger))){
+		.wait(100);
+		-at(auxiliar,charger);
+		!comprobarCargadorLibre;
+	}
+	!at(enfermera, charger);
+	useCharger; //esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería
+	!cargarBateria;
+	quitCharger;
+	!at(enfermera,afterChargerRobot);
+	+free;
+	!batteryState.
+
++!batteryState : not free <-
+	.println("Estoy ocupado, todavia no puedo ir a cargar...");
+	.wait(1000);
+	!batteryState.
+
++!batteryState : free <-
+	.wait(1000);
+	!batteryState.
+
++!batteryState  <-
+	!batteryState.
+
+
+-!batteryState <-
+	.println("ME HAN JODIDO LA BATERIA").
+
++!comprobarCargadorLibre <-
+	.send(auxiliar,askOne, at(auxiliar, charger)).
+
++!cargarBateria : battery(B) & batteryMax(BMax)<-
+	.print("CAAAARRRRGAAAAANNNDOOOOOOOOO.....");
+	.wait(3000);
+	-battery(B);
+	+battery(BMax);
+	.print("Estoy a tope jefe de equipo").
+	
++!cancelarCargarBateria: contador(T) & batteryMax(B) <-
+	.println("Me han cancealado la carga, me quito un 5%");
+	-contador(_);
+	+contador(T+1);
+	if(T==3){ //Caso que queremos decrementar
+		-batteryMax(_);
+		+batteryMax(B*0.95);
+		-contador(_);
+		+contador(0);
+	}.
+                     
+// STOCK
+
 +!iniciarStock <- 
 	getStock;
 	.findall([Med,Q],stock(Med,Q),L);
@@ -62,7 +142,8 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	-stockActual(L);
 	!iniciarStock.
 
-/* MISMA HORA Y MINUTO*/						
+// DAR MEDICINA
+
 +!tomarMedicina: pauta(Medicina,T) & consumo(Medicina,T,H,M,S) & .time(H,MM,SS) & ((MM == M & 7 >= S-SS ) | (M == MM+1 & S<7 & 7 >= (60-SS)+(S)))  & medicPend(Med) <- // Funciona por que S siempre es anterior
 	.println("Hora de ir yendo a por la medicación...");
 	.println("Owner debe tomar ",Medicina, " a las: ",H,":",M,":",S);
@@ -80,7 +161,6 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
     !tomarMedicina.
 
 
-/* NADA QUE TOMAR */
 +!tomarMedicina <- 
     .wait(10);
     !tomarMedicina.
@@ -113,51 +193,6 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 +!aPorMedicina(Medicina,_,_,_): not free[source(self)]  <-
 		.println("Añadido ", Medicina, " a la lista").
 
-+!addPauta(pauta(Medicacion,Tiempo)) <-
-	.println("Se me ha añadido la pauta: ",Medicacion," tiempo: ",Tiempo);
-	.time(H,M,S);
-	+pauta(Medicacion,Tiempo);
-	+consumo(Medicacion,Tiempo,H,M,S).
-
-+!deletePauta(pauta(Medicacion,_)) <-
-	.println("Se ha eliminado la pauta: ",Medicacion);
-	.time(H,M,S);
-	-pauta(Medicacion,_);
-	-consumo(Medicacion,_,H,M,S).
-
-
-
-+!cancelarMedicacion: free[source(self)] <-
-	.print("Me prohiben ir a por la medicacion, estoy libre");
-	//.send(auxiliar,achieve,comprobarTomaOwner).
-	!comprobarTomaOwner.
-
-+!cancelarMedicacion: not free[source(self)] & medicActual([])  <-
-	.print("Me prohiben ir a por la medicacion");
-	.drop_intention(aPorMedicina(_,_,_,_));
-	+free;
-	//.send(auxiliar,achieve,comprobarTomaOwner).
-	!comprobarTomaOwner.
-
-+!cancelarMedicacion: not free[source(self)] & not medicActual([]) <-
-	.print("Me prohiben ir a por la medicacion pero tengo medicina que entregar al owner");
-	//.send(auxiliar,achieve,comprobarTomaOwner).
-	!comprobarTomaOwner.
-
-
-
-+!comprobarTomaOwner: not free[source(self)] <- 
-	.println("Esperando a estar libre para comprobar que el owner se ha tomado la medicacion...");
-	.wait(1000);
-	!comprobarTomaOwner.
-
-+!comprobarTomaOwner: free[source(self)] <- 
-	-free;
-	.println("El owner ha cogido la medicina, comprobando si se la ha tomado...");
-	!at(enfermera,kit);
-	!comprobarStock;
-	+free.
-
 +!comprobarHora([Med|MedL],H,M,S) <- 
 		!at(enfermera, owner);	
 		.time(HH,MM,SS);
@@ -176,6 +211,75 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 
 +!comprobarHora(_,_,_,_) <-
 	.println("No hora que comprobar").
+
++!enviarMedicinaPendiente: medicPend(L) <-
+	.send(owner,achieve,medicinaRecibida(L)).
+
++!darMedicina([],H,M,S) <-
+	.println("TODA LA MEDICINA TOMADA");
+	-medicActual(_);
+	+medicActual([]).
+
++!darMedicina([Med|MedL],H,M,S) <-
+	.time(HH,MM,SS);
+	.println("Dando al owner la medicina: ", Med, " a la hora: H:",HH,":",MM,":",SS);
+	!darMedicina(MedL,H,M,S).
+
+
++!addMedicinaPendiente(Medicina): medicPend(Med) <-
+	.concat(Med,[Medicina],L);
+	-medicPend(_);
+	+medicPend(L).
+
++!addMedicinaActual(Medicina): medicActual(Med) <-
+	.concat(Med,[Medicina],L);
+	-medicActual(_);
+	+medicActual(L).
+
+
+
+
++!cogerTodaMedicina([Car|Cdr]) <-
+		.println("Cojo la medicina ",Car);
+		getMedicina(Car);
+		!addMedicinaActual(Car);
+		!cogerTodaMedicina(Cdr).
+
++!cogerTodaMedicina([]) <-
+		.println("He cogido toda la medicina");
+		!actualizarStock.
+
+
+// COMPROBAR TOMADA
+
++!cancelarMedicacion: free[source(self)] <-
+	.print("Me prohiben ir a por la medicacion, estoy libre");
+	//.send(auxiliar,achieve,comprobarTomaOwner).
+	!comprobarTomaOwner.
+
++!cancelarMedicacion: not free[source(self)] & medicActual([])  <-
+	.print("Me prohiben ir a por la medicacion");
+	.drop_intention(aPorMedicina(_,_,_,_));
+	+free;
+	//.send(auxiliar,achieve,comprobarTomaOwner).
+	!comprobarTomaOwner.
+
++!cancelarMedicacion: not free[source(self)] & not medicActual([]) <-
+	.print("Me prohiben ir a por la medicacion pero tengo medicina que entregar al owner");
+	//.send(auxiliar,achieve,comprobarTomaOwner).
+	!comprobarTomaOwner.
+
++!comprobarTomaOwner: not free[source(self)] <- 
+	.println("Esperando a estar libre para comprobar que el owner se ha tomado la medicacion...");
+	.wait(1000);
+	!comprobarTomaOwner.
+
++!comprobarTomaOwner: free[source(self)] <- 
+	-free;
+	.println("El owner ha cogido la medicina, comprobando si se la ha tomado...");
+	!at(enfermera,kit);
+	!comprobarStock;
+	+free.
 
 +!comprobarStock: not medicActualOwner(L) <- 
 	.print("Esperando a que owner me diga que medicacion ha tomado...");
@@ -223,56 +327,12 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	.wait(1000);
 	.print("AVISO! Owner no se ha tomado  ", MedicinaTomada).
 
-
-+!consumo(X) : battery(B) <-
-	.print("-1 de batería: ", B);
-	-battery(B);
-	+battery(B-X).
-
-
-
-
-+!enviarMedicinaPendiente: medicPend(L) <-
-	.send(owner,achieve,medicinaRecibida(L)).
-
-+!darMedicina([],H,M,S) <-
-	.println("TODA LA MEDICINA TOMADA");
-	-medicActual(_);
-	+medicActual([]).
-
-+!darMedicina([Med|MedL],H,M,S) <-
-	.time(HH,MM,SS);
-	.println("Dando al owner la medicina: ", Med, " a la hora: H:",HH,":",MM,":",SS);
-	!darMedicina(MedL,H,M,S).
-
-
-+!addMedicinaPendiente(Medicina): medicPend(Med) <-
-	.concat(Med,[Medicina],L);
-	-medicPend(_);
-	+medicPend(L).
-
-+!addMedicinaActual(Medicina): medicActual(Med) <-
-	.concat(Med,[Medicina],L);
-	-medicActual(_);
-	+medicActual(L).
-
-
-
-
-+!cogerTodaMedicina([Car|Cdr]) <-
-		.println("Cojo la medicina ",Car);
-		getMedicina(Car);
-		!addMedicinaActual(Car);
-		!cogerTodaMedicina(Cdr).
-
-+!cogerTodaMedicina([]) <-
-		.println("He cogido toda la medicina");
-		!actualizarStock.
-
 +!medicinaRecibida(L) <- 
 	.println("Medicamentos actualizados");
 	-medicPend(_);
 	+medicPend(L).
+
+// CÓDIGO BÁSICO
 
 +!at(Ag, P) : at(Ag, P) <- 
 	.println(Ag, " is at ",P);
@@ -311,53 +371,7 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	move_towards(P).                                                          
 -!go(P) <- 
 	.println("¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿ WHAT A FUCK !!!!!!!!!!!!!!!!!!!!");
-	.println("..........SOMETHING GOES WRONG......").                                        
-	                                                                        
-+!batteryState : battery(B) & B < 100 & free <-
-	-free;
-	.print("Mmmmmmmmmmmmmmmmmmmmme queda poca batería. Voy al puesto de cargaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-	!at(enfermera, waitCharger);
-	
-	!comprobarCargadorLibre;
-	
-	while(.belief(at(auxiliar,charger))){
-		.wait(100);
-		-at(auxiliar,charger);
-		!comprobarCargadorLibre;
-	}
-	!at(enfermera, charger);
-	useCharger; //esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería
-	!cargarBateria;
-	quitCharger;
-	!at(enfermera,afterChargerRobot);
-	+free;
-	!batteryState.
-
-+!batteryState : not free <-
-	.println("Estoy ocupado, todavia no puedo ir a cargar...");
-	.wait(1000);
-	!batteryState.
-
-+!batteryState : free <-
-	.wait(1000);
-	!batteryState.
-
-+!batteryState  <-
-	!batteryState.
-
-
--!batteryState <-
-	.println("ME HAN JODIDO LA BATERIA").
-
-+!comprobarCargadorLibre <-
-	.send(auxiliar,askOne, at(auxiliar, charger)).
-
-+!cargarBateria : battery(B) <-
-	.print("CAAAARRRRGAAAAANNNDOOOOOOOOO.....");
-	.wait(3000);
-	-battery(B);
-	+battery(288);
-	.print("Estoy a tope jefe de equipo").
-                                                                   
+	.println("..........SOMETHING GOES WRONG......").                                                                                                            
+                                              
 +?time(T) : true
   <-  time.check(T).

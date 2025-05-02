@@ -56,12 +56,7 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 
 !aMiBola.
 
-
-// Initially Owner could be: sit, opening the door, waking up, walking, ...
-//!sit.   			
-//!check_bored. 
-
-//+!init <- !sit ||| !open ||| !walk ||| !wakeup ||| !check_bored.
+// INICIALIZACIÓN
 
 +!send_pauta : true  <-
 	.findall(pauta(X,Y), pauta(X,Y), L);
@@ -140,8 +135,28 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	-pauta(Medicacion,_);
 	-consumo(Medicacion,_,H,M,S).
 
+// MOVIMIENTO ALEATORIO
 
-/* MISMA HORA Y MINUTO*/						
++!aMiBola <- 
+   	!!sit;
+	.random(X); .wait(X*10000+2000);
+   	.print("VOY YO A POR LA MEDICINA");
+	!goToMedicina.
+	
++!goToMedicina: busy <-
+	 .println("Estoy ocupado pero voy a por la medicina igual");
+	 .drop_desire(sit);
+	 -busy;
+	 !aPorMedicina;
+	 !aMiBola.
+
++!goToMedicina: not busy <-
+	 .println("No estoy ocupado voy a por la medicina");
+	 !aPorMedicina;
+	 !aMiBola.
+
+// IR A POR MEDICINA
+
 +!tomarMedicina: pauta(Medicina,T) & consumo(Medicina,T,H,M,S) & .time(H,MM,SS) & ((MM == M & 15 >= S-SS ) | (M == MM+1 & S<15 & 15 >= (60-SS)+(S)))  & medicPend(Med) <- // Funciona por que S siempre es anterior
 	.println("Hora de ir yendo a por la medicación...");
 	.println("Owner debe tomar ",Medicina, " a las: ",H,":",M,":",S);
@@ -158,7 +173,6 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
     !tomarMedicina.
 
 
-/* NADA QUE TOMAR */
 +!tomarMedicina <- 
     .wait(10);
     !tomarMedicina.
@@ -194,8 +208,6 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 +!enviarMedicinaPendiente: medicPend(L) <-
 	.send(enfermera,achieve,medicinaRecibida(L)).
 
-
-
 +!consumirMedicina: medicActualOwner([Car|Cdr]) <-
 	.println("Tomando ", Car);
 	-medicActualOwner(_);
@@ -218,11 +230,6 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 		.println("He cogido toda la medicina");
 		.send(enfermera,tell,medicActualOwner(L)).
 
-/* NADA QUE TOMAR */
-+!tomarMedicina <- 
-    .wait(10);
-    !tomarMedicina.
-
 +!medicinaRecibida(L) <- 
 	.println("Medicamentos actualizados");
 	-medicPend(_);
@@ -233,85 +240,8 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	-medicPend(_);
 	+medicPend(L).
 
-+!aMiBola <- 
-   	!!sit;
-	.random(X); .wait(X*10000+2000);
-   	.print("VOY YO A POR LA MEDICINA");
-	!goToMedicina.
-	  
+// CÓDIGO BÁSICO
 
-	
-+!goToMedicina: busy <-
-	 .println("Estoy ocupado pero voy a por la medicina igual");
-	 .drop_desire(sit);
-	 -busy;
-	 !aPorMedicina;
-	 !aMiBola.
-
-+!goToMedicina: not busy <-
-	 .println("No estoy ocupado voy a por la medicina");
-	 !aPorMedicina;
-	 !aMiBola.
-
-/*+!esperarHoraPerfecta(T) <-
-	.println(T);
-	if (T<=5){
-		.println("Queda poco para hora, voy a esperar...");
-		//.drop_desire;
-		.wait(T*1000);
-		.println("pasado");
-		!aMiBola;
-	}else{
-		.println("Es muy pronto para esperar!");
-	}.
-*/
-
-+!wakeup : .my_name(Ag) & not busy <-
-	+busy;
-	!check_bored;
-	.println("Owner just woke up and needs to go to the fridge"); 
-	.wait(3000);
-	-busy;
-	!sit.
-+!wakeup : .my_name(Ag) & busy <-
-	.println("Owner is doing something now, is not asleep");
-	.wait(10000);
-	!wakeup.
-	
-+!walk : .my_name(Ag) & not busy <- 
-	+busy;  
-	.println("Owner is not busy, is sit down on the sofa");
-	.wait(500);
-	!at(Ag,sofa);
-	.wait(2000);
-	//.println("Owner is walking at home"); 
-	-busy;
-	!open.
-+!walk : .my_name(Ag) & busy <-
-	.println("Owner is doing something now and could not walk");
-	.wait(6000);
-	!walk.
-
-+!open : .my_name(Ag) & not busy <-
-	+busy;   
-	.println("Owner goes to the home door");
-	.wait(200);
-	!at(Ag, delivery);
-	.println("Owner is opening the door"); 
-	.random(X); .wait(X*7351+2000); // Owner takes a random amount of time to open the door 
-	!at(Ag, sofa);
-	sit(sofa);
-	.wait(5000);
-	!at(Ag, fridge);
-	.wait(10000);
-	!at(Ag, chair3);
-	sit(chair3);
-	-busy.
-+!open : .my_name(Ag) & busy <-
-	.println("Owner is doing something now and could not open the door");
-	.wait(8000);
-	!open.
- 
 +!sit : .my_name(Ag) & not busy <- 
 	+busy; 
 	.println("Owner goes to the fridge to get a beer.");
@@ -336,6 +266,7 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	sit(sofa);
 	.wait(100);
 	-busy.
+
 +!sit : .my_name(Ag) & busy <-
 	.println("Owner is doing something now and could not go to fridge");
 	.wait(300);
@@ -381,35 +312,7 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	move_towards(P).                                                          
 -!go(P) <- .println("Something goes wrong......").
 	                                                                        
-	
-+!get(drug) : .my_name(Name) <- 
-   Time = math.ceil(math.random(4000));
-   .println("I am waiting ", Time, " ms. before asking the nurse robot for my medicine.");
-   .wait(Time);
-   .send(enfermera, achieve, has(Name, drug)).
 
-+has(owner,drug) : true <-
-   .println("Owner take the drug.");
-   !take(drug).
--has(owner,drug) : true <-
-   .println("Owner ask for drug. It is time to take it.");
-   !get(drug).
-                                       
-// while I have drug, sip
-+!take(drug) : has(owner, drug) <-
-   sip(drug);
-   .println("Owner is siping the drug.");
-   !take(drug).
-+!take(drug) : not has(owner, drug) <-
-   .println("Owner has finished to take the drug.").//;
-   //-asked(drug).
-
-+!check_bored : true
-   <- .random(X); .wait(X*5000+2000);  // Owner get bored randomly
-      .send(enfermera, askOne, time(_), R); // when bored, owner ask the robot about the time
-      .print(R);
-	  .send(enfermera, tell, chat("What's the weather in Ourense?"));
-      !check_bored.
 
 
 

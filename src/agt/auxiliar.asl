@@ -19,7 +19,7 @@ connect(livingroom, hall, doorSal1).
 connect(hallway, livingroom, doorSal2).       
 connect(livingroom, hallway, doorSal2).   
 
-battery(50). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
+battery(288). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
 batteryMax(288).
 contador(0).
 // initially, robot is free
@@ -59,11 +59,6 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
     !iniciarContadores(Cdr).
 
 +!iniciarContadores([]) <- .print("Inicialización completada").
-
-+!iniciarStock <- 
-	getStock;
-	.findall([Med,Q],stock(Med,Q),L);
-	+stockActual(L).
 
 // BATERÍA
 
@@ -120,6 +115,11 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	}.
 
 // STOCK
+
++!iniciarStock <- 
+	getStock;
+	.findall([Med,Q],stock(Med,Q),L);
+	+stockActual(L).
 
 +!actualizarStock <-
 	-stockActual(L);
