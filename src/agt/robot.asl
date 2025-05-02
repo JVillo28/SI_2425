@@ -63,7 +63,7 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	!iniciarStock.
 
 /* MISMA HORA Y MINUTO*/						
-+!tomarMedicina: pauta(Medicina,T) & consumo(Medicina,T,H,M,S) & .time(H,MM,SS) & ((MM == M & 15 >= S-SS ) | (M == MM+1 & S<15 & 15 >= (60-SS)+(S)))  & medicPend(Med) <- // Funciona por que S siempre es anterior
++!tomarMedicina: pauta(Medicina,T) & consumo(Medicina,T,H,M,S) & .time(H,MM,SS) & ((MM == M & 7 >= S-SS ) | (M == MM+1 & S<7 & 7 >= (60-SS)+(S)))  & medicPend(Med) <- // Funciona por que S siempre es anterior
 	.println("Hora de ir yendo a por la medicación...");
 	.println("Owner debe tomar ",Medicina, " a las: ",H,":",M,":",S);
 	.println("Voy a ir yendo a por ", Medicina, " a las: ",H,":",M,":",SS);	
@@ -97,7 +97,9 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 		!cogerTodaMedicina(L);
 		.abolish(medicPend(L));
 		+medicPend([]);
-		close(kit);
+		if(not .belief(close(kit))){
+			close(kit);
+		}
 		!enviarMedicinaPendiente;
 		!comprobarHora(L,H,M,S);
 		+free[source(self)].
@@ -127,34 +129,35 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 
 +!cancelarMedicacion: free[source(self)] <-
 	.print("Me prohiben ir a por la medicacion, estoy libre");
-	.send(auxiliar,achieve,comprobarTomaOwner).
-	//!comprobarTomaOwner.
+	//.send(auxiliar,achieve,comprobarTomaOwner).
+	!comprobarTomaOwner.
 
 +!cancelarMedicacion: not free[source(self)] & medicActual([])  <-
 	.print("Me prohiben ir a por la medicacion");
 	.drop_intention(aPorMedicina(_,_,_,_));
 	+free;
-	.send(auxiliar,achieve,comprobarTomaOwner).
-	//!comprobarTomaOwner.
+	//.send(auxiliar,achieve,comprobarTomaOwner).
+	!comprobarTomaOwner.
 
 +!cancelarMedicacion: not free[source(self)] & not medicActual([]) <-
 	.print("Me prohiben ir a por la medicacion pero tengo medicina que entregar al owner");
-	.send(auxiliar,achieve,comprobarTomaOwner).
-	//comprobarTomaOwner.
+	//.send(auxiliar,achieve,comprobarTomaOwner).
+	!comprobarTomaOwner.
 
-/*
+
+
 +!comprobarTomaOwner: not free[source(self)] <- 
 	.println("Esperando a estar libre para comprobar que el owner se ha tomado la medicacion...");
 	.wait(1000);
-	//!comprobarTomaOwner.
+	!comprobarTomaOwner.
 
 +!comprobarTomaOwner: free[source(self)] <- 
 	-free;
 	.println("El owner ha cogido la medicina, comprobando si se la ha tomado...");
 	!at(enfermera,kit);
-	//!comprobarStock;
+	!comprobarStock;
 	+free.
-*/
+
 +!comprobarHora([Med|MedL],H,M,S) <- 
 		!at(enfermera, owner);	
 		.time(HH,MM,SS);
@@ -173,7 +176,7 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 
 +!comprobarHora(_,_,_,_) <-
 	.println("No hora que comprobar").
-/*
+
 +!comprobarStock: not medicActualOwner(L) <- 
 	.print("Esperando a que owner me diga que medicacion ha tomado...");
 	.wait(500);
@@ -184,7 +187,8 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	getStock;
 	.findall([Med,Q],stock(Med,Q),StockNuevo);
 	!comprobarMedicinas(L,StockNuevo);
-	-medicActualOwner(_);
+	.println("Eliminando medActualOwner...", L);
+	.abolish(medicActualOwner(_));
 	!actualizarStock.
 
 +!comprobarMedicinas([Med|Cdr],StockNuevo) <-
@@ -218,7 +222,7 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 +!comprobarStockMedicina(MedicinaTomada,Q1,[]) <- 
 	.wait(1000);
 	.print("AVISO! Owner no se ha tomado  ", MedicinaTomada).
-*/
+
 
 +!consumo(X) : battery(B) <-
 	.print("-1 de batería: ", B);

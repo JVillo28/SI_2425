@@ -323,8 +323,20 @@ public class HouseModel extends GridWorldModel {
 			toRet = false;
 		} 
 		return toRet;
-		
 	}
+
+	boolean reponerMedCaducidad(String medicina){
+		boolean toRet=false;
+		if(disponibilidadMedicamentos.containsKey(medicina)){
+			disponibilidadMedicamentos.put(medicina,20);
+			toRet = true;
+		} else{
+			toRet = false;
+		} 
+		return toRet;
+	}
+
+	
 
 
 	// Now we must see if any furniture area is containing the positions x and y.  

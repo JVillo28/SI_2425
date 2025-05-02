@@ -29,8 +29,8 @@ pauta(aspirina, 50).
 caducidad(paracetamol, 50).
 caducidad(ibuprofeno, 80).
 caducidad(dalsi, 30).
-caducidad(frenadol, 100).
-caducidad(aspirina, 100).
+caducidad(frenadol, 25).
+caducidad(aspirina, 26).
 
 medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar owner
 medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el owner en el momento
@@ -175,7 +175,9 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	!consumirMedicina;
 	.abolish(medicPend(L));
 	+medicPend([]);
-	close(kit);
+	if(not .belief(close(kit))){
+		close(kit);
+	}
 	!enviarMedicinaPendiente;
 	-busy.
 
@@ -214,7 +216,7 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 
 +!cogerTodaMedicina([]): medicActualOwner(L) <-
 		.println("He cogido toda la medicina");
-		.send(auxiliar,tell,medicActualOwner(L)).
+		.send(enfermera,tell,medicActualOwner(L)).
 
 /* NADA QUE TOMAR */
 +!tomarMedicina <- 

@@ -207,6 +207,11 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
 			addPercept("enfermera",ok);
 			addPercept("auxiliar",ok);
 		}
+		else{
+			addPercept("owner",clk);
+			addPercept("enfermera",clk);
+			addPercept("auxiliar",clk);
+		}
 		
 
 
@@ -433,7 +438,11 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
             Term xTerm = action.getTerm(0);
 			String medicina = ((Atom) xTerm).getFunctor();
 			result = model.reponerStock(medicina);
-		} else if (action.getFunctor().equals("mano_en")) {
+		} else if (action.getFunctor().equals("reponerMedCaducidad")) {
+            Term xTerm = action.getTerm(0);
+			String medicina = ((Atom) xTerm).getFunctor();
+			result = model.reponerMedCaducidad(medicina);
+		}else if (action.getFunctor().equals("mano_en")) {
             result = model.handInMedicina();
 		} else if (action.getFunctor().equals("getStock")) {
 			Set<Entry<String,Integer>> med = model.disponibilidadMedicamentos.entrySet();	
