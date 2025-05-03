@@ -21,36 +21,21 @@ connect(livingroom, hallway, doorSal2).
 /*Initial prescription beliefs*/
 pauta(paracetamol, 25). 
 pauta(ibuprofeno, 30). 
-pauta(dalsi, 25). 
+pauta(dalsy, 25). 
 pauta(frenadol, 40). 
 pauta(aspirina, 50).
 
 //Caducidades
 caducidad(paracetamol, 50).
 caducidad(ibuprofeno, 80).
-caducidad(dalsi, 30).
+caducidad(dalsy, 30).
 caducidad(frenadol, 25).
 caducidad(aspirina, 26).
 
 medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar owner
 medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el owner en el momento
+
 /* Initial goals */
-
-//Owner will send his prescription to the robot
-// Owner will simulate the behaviour of a person 
-// We need to characterize their digital twin (DT)
-// Owner must record the DT data periodically 
-// Owner must access the historic data of such person
-// Owner will act randomly according to some problems
-// Owner will usually act with a behaviour normal
-// Owner problems will be activated by some external actions
-// Owner problems will randomly be activated on time
-// Owner will dialog with the nurse robot 
-// Owner will move randomly in the house by selecting places
-
-
-
-
 
 !send_pauta.
 
@@ -108,14 +93,14 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
     -caducidad(M, T);
     +caducidad(M, T-1);
     .wait(1000);
-    .print("SSSSSSSSSSSSSSSSS", M, "tiempo: ", T);
+    .print("Caducidad de ", M, " : ", T);
     !contadorCaducidad(M).
 
 +!contadorCaducidad(M) : caducidad(M, T) & pedidoReposicion(M) <- 
     -caducidad(M, T);
     +caducidad(M, T-1);
     .wait(1000);
-    .print("NNNNNNNNNNNNNNNN", M, "tiempo: ", T);
+    .print("Caducidad de ", M, " : ", T);
     !contadorCaducidad(M).
 
 +!cancelarPedido(M) <-
@@ -140,7 +125,7 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 +!aMiBola <- 
    	!!sit;
 	.random(X); .wait(X*10000+2000);
-   	.print("VOY YO A POR LA MEDICINA");
+   	.print("Voy yo a por la medicina");
 	!goToMedicina.
 	
 +!goToMedicina: busy <-
@@ -157,10 +142,8 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 
 // IR A POR MEDICINA
 
-+!tomarMedicina: pauta(Medicina,T) & consumo(Medicina,T,H,M,S) & .time(H,MM,SS) & ((MM == M & 15 >= S-SS ) | (M == MM+1 & S<15 & 15 >= (60-SS)+(S)))  & medicPend(Med) <- // Funciona por que S siempre es anterior
-	.println("Hora de ir yendo a por la medicación...");
-	.println("Owner debe tomar ",Medicina, " a las: ",H,":",M,":",S);
-	.println("Voy a ir yendo a por ", Medicina, " a las: ",H,":",M,":",SS);	
++!tomarMedicina: pauta(Medicina,T) & consumo(Medicina,T,H,M,S) & .time(H,MM,SS) & ((MM == M & 7 >= S-SS ) | (M == MM+1 & S<7 & 7 >= (60-SS)+(S)))  & medicPend(Med) <- // Funciona por que S siempre es anterior
+	.println("Me debo tomar ",Medicina, " a las: ",H,":",M,":",S);
 	!addMedicina(Medicina);
     .abolish(consumo(Medicina,T,H,M,S));
 	if(S+T>=60){ 
@@ -244,11 +227,10 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 
 +!sit : .my_name(Ag) & not busy <- 
 	+busy; 
-	.println("Owner goes to the fridge to get a beer.");
+	.println("Owner va a la nevera a coger una cerveza.");
 	.wait(1000);
 	!at(Ag, fridge);
-	.println("Owner is hungry and is at the fridge getting something"); 
-	//.println("He llegado al frigorifico");
+	.println("Owner tiene hambre y está en la nevera cogiendo algo");
 	.wait(20);
 	!at(Ag, chair3);
 	sit(chair3);
@@ -268,49 +250,43 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	-busy.
 
 +!sit : .my_name(Ag) & busy <-
-	.println("Owner is doing something now and could not go to fridge");
+	.println("Owner está haciendo algo ahora y no puede ir a la nevera");
 	.wait(300);
 	!sit.
 
 +!at(Ag, P) : at(Ag, P) <- 
-	.println("Owner is at ",P);
+	.println("Owner está en ",P);
 	.wait(500).
 +!at(Ag, P) : not at(Ag, P) <- 
-	.println("Going to ", P);
+	.println("Yendo a ", P);
 	!go(P);                                        
-	.println("Checking if is at ", P);
+	.println("Comprobando si está en ", P);
 	!at(Ag, P).            
 	                                                   
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomAg) <-                             
-	//.println("Al estar en la misma habitación se debe mover directamente a: ", P);
 	move_towards(P).  
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP &
-		  connect(RoomAg, RoomP, Door) & atDoor(Door) <-
-	//.println("Al estar en la puerta ", Door, " se dirige a ", P);                        
+		  connect(RoomAg, RoomP, Door) & atDoor(Door) <-                   
 	move_towards(P); 
 	!go(P).       
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP &
 		  connect(RoomAg, RoomP, Door) & not atDoor(Door) <-
-	//.println("Al estar en una habitación contigua se mueve hacia la puerta: ", Door);
 	move_towards(Door); 
 	!go(P).  
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP &
 		  not connect(RoomAg, RoomP, _) & connect(RoomAg, Room, DoorR) &
 		  connect(Room, RoomP, DoorP) & atDoor(DoorR) <-
-	//.println("Se mueve a: ", DoorP, " para ir a la habitación ", RoomP);
 	move_towards(DoorP); 
 	!go(P).      
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP &
 		  not connect(RoomAg, RoomP, _) & connect(RoomAg, Room, DoorR) &
 		  connect(Room, RoomP, DoorP) & not atDoor(DoorR) <-
-	//.println("Se mueve a: ", DoorR, " para ir a la habitación contigua, ", Room);
 	move_towards(DoorR); 
 	!go(P). 
 
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP <-
-	//.println("Owner is at ", RoomAg,", that is not a contiguous room to ", RoomP);
 	move_towards(P).                                                          
--!go(P) <- .println("Something goes wrong......").
+-!go(P) <- .println("Algo va mal......").
 	                                                                        
 
 

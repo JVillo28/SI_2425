@@ -19,7 +19,6 @@ connect(livingroom, hall, doorSal1).
 connect(hallway, livingroom, doorSal2).       
 connect(livingroom, hallway, doorSal2).     
 
-// initially, robot is free
 free.
                  
 battery(288). 
@@ -76,7 +75,7 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 
 +!batteryState : battery(B) & B < 100 & free <-
 	-free;
-	.print("Mmmmmmmmmmmmmmmmmmmmme queda poca batería. Voy al puesto de cargaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+	.print("Me queda poca batería. Voy al puesto de carga");
 	!at(enfermera, waitCharger);
 	
 	!comprobarCargadorLibre;
@@ -106,22 +105,18 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 +!batteryState  <-
 	!batteryState.
 
-
--!batteryState <-
-	.println("ME HAN JODIDO LA BATERIA").
-
 +!comprobarCargadorLibre <-
 	.send(auxiliar,askOne, at(auxiliar, charger)).
 
 +!cargarBateria : battery(B) & batteryMax(BMax)<-
-	.print("CAAAARRRRGAAAAANNNDOOOOOOOOO.....");
+	.print("Cargando.....");
 	.wait(3000);
 	-battery(B);
 	+battery(BMax);
-	.print("Estoy a tope jefe de equipo").
+	.print("He completado mi carga").
 	
 +!cancelarCargarBateria: contador(T) & batteryMax(B) <-
-	.println("Me han cancealado la carga, me quito un 5%");
+	.println("Me han cancelado la carga, me quito un 5%");
 	-contador(_);
 	+contador(T+1);
 	if(T==3){ //Caso que queremos decrementar
@@ -199,10 +194,6 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 		if(SS<S) {    
 			.print("Esperando a la hora perfecta... Hora perfecta: ",H,":",M,":",S);
 			.print("Esperando en hora actual: ",HH,":",MM,":",SS);
-			/*E = S-SS;
-			if(E<=5){
-				.send(owner,achieve,esperarHoraPerfecta(E));
-			}*/
 			!comprobarHora([Med|MedL],H,M,S);
      	}else{
 			!darMedicina([Med|MedL],H,M,S);
@@ -216,13 +207,13 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	.send(owner,achieve,medicinaRecibida(L)).
 
 +!darMedicina([],H,M,S) <-
-	.println("TODA LA MEDICINA TOMADA");
+	.println("Toda la medicina tomada");
 	-medicActual(_);
 	+medicActual([]).
 
 +!darMedicina([Med|MedL],H,M,S) <-
 	.time(HH,MM,SS);
-	.println("Dando al owner la medicina: ", Med, " a la hora: H:",HH,":",MM,":",SS);
+	.println("Dando al owner la medicina: ", Med, " a la hora: ",HH,":",MM,":",SS);
 	!darMedicina(MedL,H,M,S).
 
 
@@ -288,7 +279,6 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	getStock;
 	.findall([Med,Q],stock(Med,Q),StockNuevo);
 	!comprobarMedicinas(L,StockNuevo);
-	.println("Eliminando medActualOwner...", L);
 	.abolish(medicActualOwner(_));
 	!actualizarStock.
 
@@ -332,7 +322,7 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 // CÓDIGO BÁSICO
 
 +!at(Ag, P) : at(Ag, P) <- 
-	.println(Ag, " is at ",P);
+	.println(Ag, " está en ",P);
 	.wait(500).
 +!at(Ag, P) : not at(Ag, P) <-   
 	!go(P);                                        
@@ -363,12 +353,9 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	!consumo(1);
 	move_towards(DoorR); 
 	!go(P). 
-+!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP <- //& not atDoor <-
++!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP <-
 	!consumo(1);
 	move_towards(P).                                                          
 -!go(P) <- 
 	.println("¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿ WHAT A FUCK !!!!!!!!!!!!!!!!!!!!");
 	.println("..........SOMETHING GOES WRONG......").                                                                                                            
-                                              
-+?time(T) : true
-  <-  time.check(T).

@@ -22,7 +22,6 @@ connect(livingroom, hallway, doorSal2).
 battery(288). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
 batteryMax(288).
 contador(0).
-// initially, robot is free
 free.
                  
 
@@ -69,9 +68,9 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 
 +!batteryState : battery(B) & B < 50 & free <-
 	-free;
-	.print("Mmmmmmmmmmmmmmmmmmmmme queda poca batería. Voy al puesto de cargaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+	.print("Me queda poca batería. Voy al puesto de carga");
 	!at(auxiliar, waitCharger);
-	// Si hay otro robot espero a que este llibre
+	// Si hay otro robot espero a que este libre
 	
 	!comprobarCargadorLibre;
 	
@@ -81,7 +80,7 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 		!comprobarCargadorLibre;
 	}
 	!at(auxiliar, charger);
-	useCharger; //esto está en java así que ni idea de como activarlo y luego hay otra funcion que efectivamente carga la batería
+	useCharger;
 	!cargarBateria;
 	quitCharger;
 	!at(auxiliar,afterChargerAuxiliar);
@@ -96,15 +95,15 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	.send(enfermera,askOne, at(enfermera, charger)).
 
 +!cargarBateria : battery(B) & batteryMax(BMax)<-
-	.print("CAAAARRRRGAAAAANNNDOOOOOOOOO.....");
+	.print("Cargando.....");
 	.wait(3000);
 	-battery(B);
 	+battery(BMax);
-	.print("Estoy a tope jefe de equipo").
+	.print("He completado mi carga").
 
 
 +!cancelarCargarBateria: contador(T) & batteryMax(B) <-
-	.println("Me han cancealado la carga, me quito un 5%");
+	.println("Me han cancelado la carga, me quito un 5%");
 	-contador(_);
 	+contador(T+1);
 	if(T==3){ //Caso que queremos decrementar
@@ -129,7 +128,6 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	.wait(1000);
 	getStock;
 	.findall([Med,Q],stock(Med,Q),Stock);
-	.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
 	!recorrerStock(Stock);
 	!alertaStock.
 
@@ -140,7 +138,6 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 
 +!recorrerStock([[Med,Q]|Cdr]): medicStock(L) <- 
     if(Q<=2 & not member(Med,L)){
-		.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         -medicStock(L);
 		+medicStock([Med|L]);
     }
@@ -154,7 +151,6 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 
 +!hayQueRecoger: medicStock([Car|Cdr]) & free <-
 	-free;
-	.println("Recorrido");
     .println("Yendo a reponer stock");
     !at(auxiliar, delivery);
     .println("Stock recogido");
@@ -179,13 +175,13 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 +!hayQueRecoger: medicStock([]) <- true. // Si no hay ningun medicamento que reponer o suministrar
 
 +!addStock([]) <-
-	.println("TODA EL STOCK REPUESTO");
+	.println("Todo el stock repuesto");
 	-medicStock(_);
 	+medicStock([]).
 
 +!addStock([Med|MedL]) : battery(B) & B > 0 <- 
 	!consumo(1);
-	.println("REPONIENDOO" , Med);
+	.println("Reponiendo" , Med);
 	reponerStock(Med);
 	!addStock(MedL).
 
@@ -244,7 +240,7 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	+medicRep([Medicina|L]).
 
 +!actualizarMedicina([]) <-
-	.println("TODA LA MEDICINA REPUESTA");
+	.println("Toda la medicina repuesta");
 	-medicActual(_);
 	+medicActual([]);
 	+free.
@@ -253,7 +249,6 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	!consumo(1);
 	.findall(caducidad(Med,Y), caducidad(Med,Y), U);
 	.send(owner, untell, caducidad(Med,Y));
-	.println("ELIMINANDOOOOOOOOOOOOOOO" , Med);
 	.send(owner, achieve, cancelarPedido(Med));
     .send(enfermera, untell, caducidad(Med,Y));
     .send(owner, tell, U);
@@ -265,7 +260,7 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 // CÓDIGO BÁSICO
 
 +!at(Ag, P) : at(Ag, P) <- 
-	.println(Ag, " is at ",P);
+	.println(Ag, " está en ",P);
 	.wait(500).
 +!at(Ag, P) : not at(Ag, P) <-   
 	!go(P);                                        
@@ -302,7 +297,4 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 -!go(P) <- 
 	.println("¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿ WHAT A FUCK !!!!!!!!!!!!!!!!!!!!");
 	.println("..........SOMETHING GOES WRONG......").                                        
-	                                                                        
 
-+?time(T) : true
-  <-  time.check(T).

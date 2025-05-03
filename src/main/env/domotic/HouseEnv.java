@@ -9,9 +9,8 @@ import java.util.Set;
 import java.util.Iterator;
 import java.util.Map;
 
-public class HouseEnv extends Environment { //Al extender Environment, los metodos init y execute, hay que implementarlos, stop casi también
+public class HouseEnv extends Environment {
 
-    // common literals
     public static final Literal of   = Literal.parseLiteral("open(fridge)");
     public static final Literal clf  = Literal.parseLiteral("close(fridge)");
 	public static final Literal ok   = Literal.parseLiteral("open(kit)");
@@ -52,7 +51,6 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
 
 	//Literales nuevos
 	public static final Literal getMed = Literal.parseLiteral("getMedicina(X)");
-	public static final Literal hm     = Literal.parseLiteral("en_mano(X)");
 
 
     static Logger logger = Logger.getLogger(HouseEnv.class.getName());
@@ -442,8 +440,6 @@ public class HouseEnv extends Environment { //Al extender Environment, los metod
             Term xTerm = action.getTerm(0);
 			String medicina = ((Atom) xTerm).getFunctor();
 			result = model.reponerMedCaducidad(medicina);
-		}else if (action.getFunctor().equals("mano_en")) {
-            result = model.handInMedicina();
 		} else if (action.getFunctor().equals("getStock")) {
 			Set<Entry<String,Integer>> med = model.disponibilidadMedicamentos.entrySet();	
 			Iterator<Entry<String, Integer>> it = med.iterator();

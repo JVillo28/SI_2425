@@ -8,7 +8,6 @@ import java.util.Set;
 
 import jason.environment.grid.Area;
 import jason.environment.grid.Location;
-//import jason.asSyntax.*;
 
 /** class that implements the Model of Domestic Robot application */
 public class HouseModel extends GridWorldModel {
@@ -41,28 +40,19 @@ public class HouseModel extends GridWorldModel {
 
 	public int bateria_robot = GSize*2*GSize;
 	public int bateria_auxiliar = GSize*2*GSize;
-
-	boolean carryingDrug = false; // whether the robot is carrying drug
-	int availableDrugs  = 2; // how many drugs are available
                           
     boolean fridgeOpen  = false; 	// whether the fridge is open
-	boolean kitOpen		= false;                                   
-    int sipCount        = 0; 		// how many sip the owner did
+	boolean kitOpen		= false;                              
 
 	public final String PARACETAMOL = "paracetamol";
 	public final String IBUPROFENO 	= "ibuprofeno";
-	public final String DALSI 		= "dalsi";
+	public final String DALSY 		= "dalsy";
 	public final String FRENADOL 	= "frenadol";
 	public final String ASPIRINA 	= "aspirina";
 
 	public Map<String,Integer> disponibilidadMedicamentos = new HashMap<>();
-
-	boolean llevandoMedicina 	= false; 
 	boolean chargerFree 		= true;	
 
-
-
-	
 
     
 	// Initialization of the objects Location on the domotic home scene 
@@ -118,16 +108,8 @@ public class HouseModel extends GridWorldModel {
 	Area bedI2		= new Area(GSize*3/4, 0, GSize*2-1, GSize/3);
 	Area hall		= new Area(0, GSize/2+1, GSize/4, GSize-1);
 	Area hallway	= new Area(GSize/2+2, GSize/2-1, GSize*2-1, GSize/2);
-	/*
-	Modificar el modelo para que la casa sea un conjunto de habitaciones
-	Dar un codigo a cada habitación y vincular un Area a cada habitación
-	Identificar los objetos de manera local a la habitación en que estén
-	Crear un método para la identificación del tipo de agente existente
-	Identificar objetos globales que precisen de un único identificador
-	*/
 	
     public HouseModel() {
-        // create a GSize x 2GSize grid with 3 mobile agent
         super(2*GSize, GSize, 4);
                                                                            
         // Initial location for the owner and the nurse
@@ -178,11 +160,11 @@ public class HouseModel extends GridWorldModel {
 		
 		localizacionesVisitadas = new HashMap<>();
 
-		disponibilidadMedicamentos.put(PARACETAMOL,	50);
-		disponibilidadMedicamentos.put(IBUPROFENO,	50);
-		disponibilidadMedicamentos.put(ASPIRINA,	50);
-		disponibilidadMedicamentos.put(DALSI,		1);
-		disponibilidadMedicamentos.put(FRENADOL,	50);
+		disponibilidadMedicamentos.put(PARACETAMOL,	20);
+		disponibilidadMedicamentos.put(IBUPROFENO,	20);
+		disponibilidadMedicamentos.put(ASPIRINA,	20);
+		disponibilidadMedicamentos.put(DALSY,		20);
+		disponibilidadMedicamentos.put(FRENADOL,	20);
  		
 		 
      }
@@ -295,16 +277,16 @@ public class HouseModel extends GridWorldModel {
 	}
 	
 	boolean getMedicina(String medicina, int unidad){
+		boolean toRet = false;
 		if(disponibilidadMedicamentos.containsKey(medicina) && kitOpen && disponibilidadMedicamentos.get(medicina)>0 ){
 			disponibilidadMedicamentos.put(medicina,disponibilidadMedicamentos.get(medicina)-1);
 			System.out.println("Eliminado "+Integer.toString(unidad)+" unidad de " + medicina);
-			return true;
+			toRet = true;
 		} else{
-			disponibilidadMedicamentos.put(medicina, 50);
-			System.out.println("Medicina repuesta");
-			return true;
+			System.out.println("No hay más " + medicina);
+			toRet = false;
 		} 
-		
+		return toRet;
 	}
 
 	boolean mostrarMedicinas(){
@@ -376,15 +358,15 @@ public class HouseModel extends GridWorldModel {
 	}
 
 	public boolean haEstado(int Ag, Location loc){
+		boolean toRet = false;
 		Set<Location> visitada = localizacionesVisitadas.get(Ag);
 		if(visitada == null){
-			return false;
+			toRet = false;
 		}
-		if(visitada.contains(loc)){
-			return true;
-		}else{
-			return false;
+		else if(visitada.contains(loc)){
+			toRet = true;
 		}
+		return toRet;
 	}
 
 	boolean esAdyacente(Location loc1, Location loc2){
@@ -427,7 +409,6 @@ public class HouseModel extends GridWorldModel {
 		Location robotLocation = getAgPos(NURSE);
 		Location auxiliarLocation = getAgPos(AUXILIAR);
 
-		// Distance > 0; Si owner prioridad ante todo; Si es robot y quiere ir al auxiliarLocation empuja; Si es auxiliar esquiva
 		if (posicionAgente.distance(dest)>0) { //OWNER
 			
 			if (posicionAgente.x < dest.x && canMoveTo(Ag,posicionAgente.x+1,posicionAgente.y) && !haEstado(Ag, new Location(posicionAgente.x+1, posicionAgente.y))) {
@@ -505,73 +486,10 @@ public class HouseModel extends GridWorldModel {
 		if (posicionAgente.distance(dest)==1){
 			localizacionesVisitadas.clear();
 		}
-		
-		
 	
 		setAgPos(Ag, posicionAgente); // move the agent in the grid 
 		
         return true;        
-    }
-	
-	boolean gastarEnergia(int Ag) {
-		if (Ag == NURSE) {
-			if(bateria_robot == 0) {
-				System.out.println("El robot ENFERMERA se ha quedado sin bateria, por favor recargue la bateria del robot.");
-				return false;
-			} else {
-				bateria_robot -= 1;
-				return true;
-			}
-		} else {
-			if(bateria_auxiliar == 0) {
-				System.out.println("El robot AUXILIAR se ha quedado sin bateria, por favor recargue la bateria del robot.");
-				return false;	
-			} else {
-				bateria_auxiliar -= 1;
-				return true;
-			}
-		}
-	}
-
-	boolean recargarEnergia(int Ag) {
-		if(chargerFree){
-			if (Ag == NURSE) {
-			if(bateria_robot < GridSize*2*GSize) {
-				bateria_robot += 1;
-				return true;
-			} else {
-				System.out.println("El robot ENFERMERA ya tiene la bateria cargada al maximo.");
-				chargerFree = true;
-				return false;
-			}
-		} else {
-			if(bateria_auxiliar < GridSize*2*GSize) {
-				bateria_auxiliar += 1;
-				return true;
-			} else {
-				System.out.println("El robot AUXILIAR ya tiene la bateria cargada al maximo.");
-				chargerFree = true;
-				return false;
-			}
-		}
-		} else {
-			return false;
-		}
-		
-	}
-
-	
-
-	boolean handInMedicina() {
-        if (carryingDrug) {
-            sipCount = 10;
-            carryingDrug = false;
-            //if (view != null)
-                //view.update(lOwner.x,lOwner.y);
-            return true;
-        } else {
-            return false;
-        }
     }
 
 }
