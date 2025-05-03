@@ -131,7 +131,7 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 +!deletePauta(pauta(Medicacion,_)) <-
 	.println("Se ha eliminado la pauta: ",Medicacion);
 	.time(H,M,S);
-	.send(enfermera,achieve,addPauta(pauta(Medicacion,_)));
+	.send(enfermera,achieve,deletePauta(pauta(Medicacion,_)));
 	-pauta(Medicacion,_);
 	-consumo(Medicacion,_,H,M,S).
 

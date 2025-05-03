@@ -254,19 +254,16 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 
 +!cancelarMedicacion: free[source(self)] <-
 	.print("Me prohiben ir a por la medicacion, estoy libre");
-	//.send(auxiliar,achieve,comprobarTomaOwner).
 	!comprobarTomaOwner.
 
 +!cancelarMedicacion: not free[source(self)] & medicActual([])  <-
 	.print("Me prohiben ir a por la medicacion");
 	.drop_intention(aPorMedicina(_,_,_,_));
 	+free;
-	//.send(auxiliar,achieve,comprobarTomaOwner).
 	!comprobarTomaOwner.
 
 +!cancelarMedicacion: not free[source(self)] & not medicActual([]) <-
 	.print("Me prohiben ir a por la medicacion pero tengo medicina que entregar al owner");
-	//.send(auxiliar,achieve,comprobarTomaOwner).
 	!comprobarTomaOwner.
 
 +!comprobarTomaOwner: not free[source(self)] <- 
