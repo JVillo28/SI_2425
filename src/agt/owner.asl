@@ -41,7 +41,9 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 
 !aMiBola.
 
-// INICIALIZACIÓN
+/*************************************************************************/
+/*************************  INICIALIZACIÓN  ******************************/
+/*************************************************************************/
 
 +!send_pauta : true  <-
 	.findall(pauta(X,Y), pauta(X,Y), L);
@@ -55,7 +57,6 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	.send(auxiliar,achieve,inicia);
 	!inicia.
 
-
 +!inicia : true <- 
     .print("Iniciando recordatorios de medicamentos...");
     .time(H, M, S);
@@ -64,7 +65,6 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	!iniciarCaducidad(U);
     !iniciarContadores(L);
     !tomarMedicina.
-
 
 +!iniciarCaducidad([caducidad(X,_)|Cdr]) <-
 	!!contadorCaducidad(X);
@@ -120,7 +120,9 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	-pauta(Medicacion,_);
 	-consumo(Medicacion,_,H,M,S).
 
-// MOVIMIENTO ALEATORIO
+/*************************************************************************/
+/**********************  MOVIMIENTO ALEATORIO  ***************************/
+/*************************************************************************/
 
 +!aMiBola <- 
    	!!sit;
@@ -140,7 +142,9 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	 !aPorMedicina;
 	 !aMiBola.
 
-// IR A POR MEDICINA
+/*************************************************************************/
+/**********************   IR A POR MEDICINA  *****************************/
+/*************************************************************************/
 
 +!tomarMedicina: pauta(Medicina,T) & consumo(Medicina,T,H,M,S) & .time(H,MM,SS) & ((MM == M & 7 >= S-SS ) | (M == MM+1 & S<7 & 7 >= (60-SS)+(S)))  & medicPend(Med) <- // Funciona por que S siempre es anterior
 	.println("Me debo tomar ",Medicina, " a las: ",H,":",M,":",S);
@@ -223,7 +227,9 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	-medicPend(_);
 	+medicPend(L).
 
-// CÓDIGO BÁSICO
+/*************************************************************************/
+/*************************  CÓDIGO BÁSICO  *******************************/
+/*************************************************************************/
 
 +!sit : .my_name(Ag) & not busy <- 
 	+busy; 

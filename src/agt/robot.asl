@@ -31,7 +31,9 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 
 /* Plans */
 
-// INICIALIZACIÓN
+/*************************************************************************/
+/*************************  INICIALIZACIÓN  ******************************/
+/*************************************************************************/
 
 +!inicia : true <- 
     .print("Iniciando recordatorios de medicamentos...");
@@ -66,7 +68,9 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	-pauta(Medicacion,_);
 	-consumo(Medicacion,_,H,M,S).
 
-// BATERÍA
+/*************************************************************************/
+/***************************  BATERIA  ***********************************/
+/*************************************************************************/
 
 +!consumo(X) : battery(B) <-
 	.print("-1 de batería: ", B);
@@ -125,8 +129,10 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 		-contador(_);
 		+contador(0);
 	}.
-                     
-// STOCK
+                      
+/*************************************************************************/
+/***************************  STOCK  *************************************/
+/*************************************************************************/
 
 +!iniciarStock <- 
 	getStock;
@@ -137,7 +143,9 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	-stockActual(L);
 	!iniciarStock.
 
-// DAR MEDICINA
+/*************************************************************************/
+/************************** DAR MEDICINA *********************************/
+/*************************************************************************/
 
 +!tomarMedicina: pauta(Medicina,T) & consumo(Medicina,T,H,M,S) & .time(H,MM,SS) & ((MM == M & 7 >= S-SS ) | (M == MM+1 & S<7 & 7 >= (60-SS)+(S)))  & medicPend(Med) <- // Funciona por que S siempre es anterior
 	.println("Hora de ir yendo a por la medicación...");
@@ -154,7 +162,6 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	.belief(consumo(Medicina,_,_,MMM,SSS));
 	.println("Actualizado consumo a min: ",MMM," seg: ",SSS);
     !tomarMedicina.
-
 
 +!tomarMedicina <- 
     .wait(10);
@@ -199,7 +206,6 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 			!darMedicina([Med|MedL],H,M,S);
 		}.
 
-
 +!comprobarHora(_,_,_,_) <-
 	.println("No hora que comprobar").
 
@@ -227,9 +233,6 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	-medicActual(_);
 	+medicActual(L).
 
-
-
-
 +!cogerTodaMedicina([Car|Cdr]) <-
 		.println("Cojo la medicina ",Car);
 		getMedicina(Car);
@@ -240,8 +243,9 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 		.println("He cogido toda la medicina");
 		!actualizarStock.
 
-
-// COMPROBAR TOMADA
+/*************************************************************************/
+/******************** COMPROBAR MEDICINA TOMADA **************************/
+/*************************************************************************/
 
 +!cancelarMedicacion: free[source(self)] <-
 	.print("Me prohiben ir a por la medicacion, estoy libre");
@@ -319,7 +323,9 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	-medicPend(_);
 	+medicPend(L).
 
-// CÓDIGO BÁSICO
+/*************************************************************************/
+/*************************  CÓDIGO BÁSICO  *******************************/
+/*************************************************************************/
 
 +!at(Ag, P) : at(Ag, P) <- 
 	.println(Ag, " está en ",P);

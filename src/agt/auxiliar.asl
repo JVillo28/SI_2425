@@ -35,7 +35,10 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 
 /* Plans */
 
-// INICIALIZACIÓN
+/*************************************************************************/
+/*************************  INICIALIZACIÓN  ******************************/
+/*************************************************************************/
+
 +!inicia : true <- 
     .print("Iniciando recordatorios de medicamentos...");
     .time(H, M, S);
@@ -59,7 +62,11 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 
 +!iniciarContadores([]) <- .print("Inicialización completada").
 
-// BATERÍA
+
+/*************************************************************************/
+/*************************  BATERÍA  *************************************/
+/*************************************************************************/
+
 
 +!consumo(X) : battery(B) <-
 	.print("-1 de batería: ", B);
@@ -113,7 +120,9 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 		+contador(0);
 	}.
 
-// STOCK
+/*************************************************************************/
+/*************************   STOCK  *************************************/
+/*************************************************************************/
 
 +!iniciarStock <- 
 	getStock;
@@ -134,8 +143,6 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 +!alertaStock: true <-
 	!alertaStock.
 
-
-
 +!recorrerStock([[Med,Q]|Cdr]): medicStock(L) <- 
     if(Q<=2 & not member(Med,L)){
         -medicStock(L);
@@ -146,8 +153,6 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 
 +!recorrerStock([]): medicStock(L) <- 
     true.
-
-
 
 +!hayQueRecoger: medicStock([Car|Cdr]) & free <-
 	-free;
@@ -185,8 +190,9 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	reponerStock(Med);
 	!addStock(MedL).
 
-
-// CADUCIDAD
+/*************************************************************************/
+/*************************  CADUCIDAD  ***********************************/
+/*************************************************************************/
 
 +!reponerMedicinas : battery(B) & B > 0 & medicRep(Med) & free <- 
 	-free;
@@ -257,7 +263,9 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	!actualizarStock;
 	!actualizarMedicina(MedL).
 
-// CÓDIGO BÁSICO
+/*************************************************************************/
+/*************************  CÓDIGO BÁSICO  *******************************/
+/*************************************************************************/
 
 +!at(Ag, P) : at(Ag, P) <- 
 	.println(Ag, " está en ",P);
