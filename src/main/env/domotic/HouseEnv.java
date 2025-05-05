@@ -48,11 +48,6 @@ public class HouseEnv extends Environment {
     public static final Literal oasf = Literal.parseLiteral("at(owner,sofa)");
 	public static final Literal oak	 = Literal.parseLiteral("at(owner,kit)");
 
-
-	//Literales nuevos
-	public static final Literal getMed = Literal.parseLiteral("getMedicina(X)");
-
-
     static Logger logger = Logger.getLogger(HouseEnv.class.getName());
 
     HouseModel model; // the model of the grid
