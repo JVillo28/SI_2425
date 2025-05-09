@@ -28,9 +28,9 @@ pauta(aspirina, 50).
 //Caducidades
 caducidad(paracetamol, 50).
 caducidad(ibuprofeno, 80).
-caducidad(dalsy, 30).
-caducidad(frenadol, 25).
-caducidad(aspirina, 26).
+caducidad(dalsy, 40).
+caducidad(frenadol, 50).
+caducidad(aspirina, 40).
 
 medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar owner
 medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el owner en el momento
@@ -51,7 +51,6 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	.print("Mi pauta: ", L);
 	.send(enfermera, tell, L);
 	.send(enfermera, tell, U);
-	.send(auxiliar, tell, L);
 	.send(auxiliar, tell, U);
 	.send(enfermera,achieve,inicia);
 	.send(auxiliar,achieve,inicia);

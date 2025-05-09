@@ -361,7 +361,12 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	!go(P). 
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP <-
 	!consumo(1);
-	move_towards(P).                                                          
+	move_towards(P).     
+
+-!go(P): battery(B) & B <= 0 <- 
+	.wait(1000);
+	.println("¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿BIG ERROR?????????????????");
+	.println("..........I DONT HAVE BATTERY LEFT......").                                                   
 -!go(P) <- 
 	.println("¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿ WHAT A FUCK !!!!!!!!!!!!!!!!!!!!");
 	.println("..........SOMETHING GOES WRONG......").                                                                                                            

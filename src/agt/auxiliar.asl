@@ -1,5 +1,6 @@
 /* Initial beliefs and rules */
 
+// Creencias que muestran la conexion entre dos salas y la puerta que los unen.
 connect(kitchen, hall, doorKit1).
 connect(kitchen, hallway, doorKit2).
 connect(hall, kitchen, doorKit1).
@@ -19,66 +20,52 @@ connect(livingroom, hall, doorSal1).
 connect(hallway, livingroom, doorSal2).       
 connect(livingroom, hallway, doorSal2).   
 
-battery(288). //numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
-batteryMax(288).
-contador(0).
-free.
+battery(2). 	// numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
+batteryMax(288).// bateria maxima que tiene el auxiliar disponible. Es de la que dispone al inicio
+contador(0). 	// numero de veces que el auxiliar ha salido de la bateria antes de tiempo
+free. 			//muestra si el auxiliar está libre de acciones que realizar
                  
 
  
 
-medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar owner
-medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot actualmente
+medicPend([]). 	// Donde vamos a manejar los medicamentos que tiene que tomar owner
+medicActual([]).// Donde vamos a manejar los medicamentos que lleva el robot actualmente
 
-medicRep([]). //Lista de medicinas que tenemos que reponer por caducidad
+medicRep([]). 	//Lista de medicinas que tenemos que reponer por caducidad
 medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de medicamentos
-
-/* Plans */
 
 /*************************************************************************/
 /*************************  INICIALIZACIÓN  ******************************/
 /*************************************************************************/
 
-+!inicia : true <- 
++!inicia : true <-  // Iniciamos planes básicos para la comprobación de batería y de stock
     .print("Iniciando recordatorios de medicamentos...");
     .time(H, M, S);
-    .findall(consumo(X,T,H,M,S), pauta(X,T), L);
 
-    !iniciarContadores(L);
 	!iniciarStock;
 	!!alertaStock;
 	!!batteryState.
 
-+!iniciarContadores([consumo(Medicina,T,H,M,S)|Cdr]) <-
-    if(S+T>=60){ 
-		+consumo(Medicina,T,H,M+1,S+T-60);
-		.print(consumo(Medicina,T,H,M+1,S+T-60));	
-	}else{
-		+consumo(Medicina,T,H,M,S+T);
-		.print(consumo(Medicina,T,H,M,S+T));
-	}
-	
-    !iniciarContadores(Cdr).
 
-+!iniciarContadores([]) <- .print("Inicialización completada").
-
++!iniciarStock <- 
+	getStock;
+	.findall([Med,Q],stock(Med,Q),L);
+	+stockActual(L).
 
 /*************************************************************************/
 /*************************  BATERÍA  *************************************/
 /*************************************************************************/
 
 
-+!consumo(X) : battery(B) <-
++!consumo(X) : battery(B) <- // Plan básico para la resta de batería del robot
 	.print("-1 de batería: ", B);
 	-battery(B);
 	+battery(B-X).
 
-+!batteryState : battery(B) & B < 50 & free <-
++!batteryState : battery(B) & B < 50 & free <- // Si la batería del auxiliar es menor que 50, voy al puesto de carga
 	-free;
 	.print("Me queda poca batería. Voy al puesto de carga");
 	!at(auxiliar, waitCharger);
-	// Si hay otro robot espero a que este libre
-	
 	!comprobarCargadorLibre;
 	
 	while(.belief(at(enfermera,charger))){
@@ -94,14 +81,24 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	+free;
 	!batteryState.
 
-+!batteryState <-
-	.wait(100);
+
++!batteryState: battery(B) & B < 50 & not free<- // Si no estoy libre pero tengo que ir a cargar, dejo vivo el plan
+	.print("No estoy libre pero tengo que ir a cargar...");
+	.wait(1000);
 	!batteryState.
 
-+!comprobarCargadorLibre <-
++!batteryState: battery(B) & B <=0 <-
+	.println("SIN BATERIA");
+	.wait(3000).
+
++!batteryState <- 	// Si no tiene por que ir a cargar, dejo el plan vivo
+	.wait(1000);
+	!batteryState.
+
++!comprobarCargadorLibre <- // Comprueba si el cargador esta libre
 	.send(enfermera,askOne, at(enfermera, charger)).
 
-+!cargarBateria : battery(B) & batteryMax(BMax)<-
++!cargarBateria : battery(B) & batteryMax(BMax)<- // Si esta ya en el cargador, esperamos 3 segundo a que el robot se llene de batería
 	.print("Cargando.....");
 	.wait(3000);
 	-battery(B);
@@ -109,7 +106,7 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	.print("He completado mi carga").
 
 
-+!cancelarCargarBateria: contador(T) & batteryMax(B) <-
++!cancelarCargarBateria: contador(T) & batteryMax(B) <- 
 	.println("Me han cancelado la carga, me quito un 5%");
 	-contador(_);
 	+contador(T+1);
@@ -124,87 +121,108 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 /*************************   STOCK  *************************************/
 /*************************************************************************/
 
-+!iniciarStock <- 
-	getStock;
-	.findall([Med,Q],stock(Med,Q),L);
-	+stockActual(L).
 
-+!actualizarStock <-
++!actualizarStock <- // Actualiza la creencia de stockActual con el stock real que está en el entorno
 	-stockActual(L);
 	!iniciarStock.
 
-+!alertaStock: medicStock([]) <-
++!alertaStock: medicStock([]) <-  // Plan que se ejecuta contantemente, comprueba el stock y recorre el stock en busca de medicamentos con bajo stock
 	.wait(1000);
 	getStock;
 	.findall([Med,Q],stock(Med,Q),Stock);
 	!recorrerStock(Stock);
 	!alertaStock.
 
-+!alertaStock: true <-
++!alertaStock: true <- // En el caso de que se este yendo a por el stock
 	!alertaStock.
 
-+!recorrerStock([[Med,Q]|Cdr]): medicStock(L) <- 
++!recorrerStock([[Med,Q]|Cdr]): medicStock(L) <-  //Recorremos la lista en busca de medicamentos que la cantidad sea de menor de 20
     if(Q<=2 & not member(Med,L)){
         -medicStock(L);
 		+medicStock([Med|L]);
     }
-	!hayQueRecoger;
 	!recorrerStock(Cdr).
 
-+!recorrerStock([]): medicStock(L) <- 
-    true.
++!recorrerStock([]) <- 			// Cuando termine de comprobar la lista
+    !hayQueRecoger.
 
-+!hayQueRecoger: medicStock([Car|Cdr]) & free <-
+
+
++!hayQueRecoger: battery(B) & B > 0 & medicStock(L) & free <- // Si hay algun medicamento que suministrar y esta libre vamos al delivery a recoger la medicina
 	-free;
     .println("Yendo a reponer stock");
     !at(auxiliar, delivery);
-    .println("Stock recogido");
+    !cogerMedicinaStock;
     .wait(1000);
     !at(auxiliar, kit);
 	if(not .belief(open(kit))){
 		open(kit);
 	}
-	?medicStock(L);
-	!addStock(L);
+	?medicActual(MActual);
+	!addStock(MActual);
 	!actualizarStock;
     if(not .belief(close(kit))){
 		close(kit);
 	}
-	!actualizarStock;
 	+free.
 
-+!hayQueRecoger: medicStock([Car|Cdr]) & not free <-
++!hayQueRecoger: battery(B) & B <=0 <-
+	.println("SIN BATERIA");
+	.wait(3000).
+
++!hayQueRecoger: medicStock([Car|Cdr]) & not free <- // Si el robot no esta libre, espera y deja vivo el plan
 	.wait(1000);
 	!hayQueRecoger.
 
 +!hayQueRecoger: medicStock([]) <- true. // Si no hay ningun medicamento que reponer o suministrar
 
-+!addStock([]) <-
-	.println("Todo el stock repuesto");
-	-medicStock(_);
-	+medicStock([]).
 
-+!addStock([Med|MedL]) : battery(B) & B > 0 <- 
+
++!cogerMedicinaStock: battery(B) & B > 0 & medicStock([Med|Cdr]) & medicActual(L)<-  // Cogemos toda la medicina en medicStock y la ponemos en medicActual
+	.println("Cogiendo ", Med);
+	!consumo(2);							// Cuando coge la medicina del delivery gasta 2 de energia
+	-medicStock(_);
+	+medicStock(Cdr);
+	-medicActual(_);
+	+medicActual([Med|L]);
+	!cogerMedicinaStock.
+
++!cogerMedicinaStock: battery(B) & B <=0 <-
+	.println("SIN BATERIA");
+	.wait(3000).
+
++!cogerMedicinaStock: medicStock([]) <-  // Cuando hemos cogido toda la medicina
+	.println("Todos los medicamentos recogidos").
+
+
++!addStock([Med|MedL]) : battery(B) & B > 0 <-  // Dejamos la medicina en el kit
 	!consumo(1);
 	.println("Reponiendo" , Med);
 	reponerStock(Med);
 	!addStock(MedL).
 
++!addStock: battery(B) & B <=0 <-
+	.println("SIN BATERIA");
+	.wait(3000).
+
++!addStock([]) <- // Cuando hemos dejado toda la medicina en el kit
+	.println("Todo el stock repuesto");
+	-medicActual(_);
+	+medicActual([]).
+
 /*************************************************************************/
 /*************************  CADUCIDAD  ***********************************/
 /*************************************************************************/
 
-+!reponerMedicinas : battery(B) & B > 0 & medicRep(Med) & free <- 
++!reponerMedicinas : battery(B) & B > 0 & medicRep(Med) & free <- // Plan basico para el recogimiento de medicinas por caducidad
 	-free;
-	!consumo(1);
     .println("Las medicinas ", Med, " van a caducar");
     .println("Yendo a la zona de entrega");
     !at(auxiliar, delivery);
 	?medicRep(L);
+	!cogerMedicina(L);
 	-medicRep(_);
 	+medicRep([]);
-	-medicActual(_);
-	+medicActual(L);
     .println("Medicinas",L,"recogidas");
     .wait(1000);
     .println("Yendo al kit a reponer");
@@ -217,42 +235,53 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 		close(kit);
 	}
 	+free.
-+!reponerMedicinas: not free <-
-	!reponerMedicinas.
+	
++!reponerMedicinas: battery(B) & B <=0 <-
+	.println("SIN BATERIA");
+	.wait(3000).
 
-+!reponerMedicina(Medicina): medicRep([]) & free <-
-	.println("Estoy libre, va a caducar la medicina: ",Medicina);
++!reponerMedicinas: not free <- // Si el auxiliar no está libre, mantiene vivo el plan
+	!reponerMedicinas. 
+
++!reponerMedicina(Medicina): medicRep([]) & free <- // Si el robot esta libre, y no tiene que recoger otra medicina, añade a la lista medicRep y llama a reponerMedicinas
+	.println("Estoy libre, va a caducar la primera medicina: ",Medicina);
 	-medicRep(_);
 	+medicRep([Medicina]);
 	!reponerMedicinas.
 
-+!reponerMedicina(Medicina): not medicRep([]) & free <-
++!reponerMedicina(Medicina): not medicRep([]) & free <- // Si no es el primer medicamento que va a caducar, simplemente añade a la lista el medicamento
 	.println("Estoy libre, va a caducar la medicina: ",Medicina);
 	?medicRep(L);
 	-medicRep(_);
 	+medicRep([Medicina|L]).
-
-+!reponerMedicina(Medicina): medicRep([]) & not free <-
+  
++!reponerMedicina(Medicina): medicRep([]) & not free <- // Si no esta libre y es el primero, añade a la lista y llama al plan
 	.println("Esperando a estar libre para ir a reponer la medicina",Medicina);
 	-medicRep(_);
 	+medicRep([Medicina]);
 	.wait(1000);
 	!reponerMedicinas.
 
-+!reponerMedicina(Medicina): not medicRep([]) & not free <-
++!reponerMedicina(Medicina): not medicRep([]) & not free <- // Sino es el primero y no esta libre simplemente añade a la lista el medicamento
 	.println("Añadiendo medicina:",Medicina," a la lista de reposicion");
 	?medicRep(L);
 	-medicRep(_);
 	+medicRep([Medicina|L]).
 
-+!actualizarMedicina([]) <-
-	.println("Toda la medicina repuesta");
++!cogerMedicina([Med|MedL]): medicActual(L) <- // Coge la medicina del delivery
+	.println("Cogiendo ", Med);
+	!consumo(2);							// Cuando coge la medicina del delivery gasta 2 de energia
 	-medicActual(_);
-	+medicActual([]);
-	+free.
+	+medicActual([Med|L]);
+	!cogerMedicina(MedL).
 
-+!actualizarMedicina([Med|MedL]) : battery(B) & B > 0 <- 
-	!consumo(1);
++!cogerMedicina([]) <-
+	.println("Todos los medicamentos recogidos").
+
+
+
++!actualizarMedicina([Med|MedL]) : battery(B) & B > 0 <-  // Repone todas las medicinas y actualiza caducidades de los demas agentes
+	.println("Reponiendo medicina, ",Med);
 	.findall(caducidad(Med,Y), caducidad(Med,Y), U);
 	.send(owner, untell, caducidad(Med,Y));
 	.send(owner, achieve, cancelarPedido(Med));
@@ -260,8 +289,20 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
     .send(owner, tell, U);
     .send(enfermera, tell, U);
 	reponerMedCaducidad(Med);
+	!consumo(2); 								// Cuando deja la medicina gasta 2 de energia
 	!actualizarStock;
 	!actualizarMedicina(MedL).
+
++!actualizarMedicina: battery(B) & B <=0 <-
+	.println("SIN BATERIA");
+	.wait(3000).
+
+
++!actualizarMedicina([]) <- 
+	.println("Toda la medicina repuesta");
+	-medicActual(_);
+	+medicActual([]);
+	+free.
 
 /*************************************************************************/
 /*************************  CÓDIGO BÁSICO  *******************************/
@@ -301,7 +342,12 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	!go(P). 
 +!go(P) : atRoom(RoomAg) & atRoom(P, RoomP) & not RoomAg == RoomP & battery(B) & B > 0 <- 
 	!consumo(1); //& not atDoor <-
-	move_towards(P).                                                          
+	move_towards(P).
+
+-!go(P): battery(B) & B <= 0 <- 
+	.wait(1000);
+	.println("¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿BIG ERROR?????????????????");
+	.println("..........I DONT HAVE BATTERY LEFT......").                                                             
 -!go(P) <- 
 	.println("¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿ WHAT A FUCK !!!!!!!!!!!!!!!!!!!!");
 	.println("..........SOMETHING GOES WRONG......").                                        
