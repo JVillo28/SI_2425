@@ -15,8 +15,7 @@ public class HouseModel extends GridWorldModel {
     // constants for the agents
 	public static final int NURSE  			=    0;
     public static final int OWNER  			=    1;
-    public static final int SUPERMARKET  	=    2;
-	public static final int AUXILIAR  		=    3;
+	public static final int AUXILIAR  		=    2;
 	
 	// constants for the grid objects
 

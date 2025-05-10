@@ -46,7 +46,6 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	!!alertaStock;
 	!!batteryState.
 
-
 +!iniciarStock <- 
 	getStock;
 	.findall([Med,Q],stock(Med,Q),L);
@@ -62,7 +61,12 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	-battery(B);
 	+battery(B-X).
 
-+!batteryState : battery(B) & B < 75 & free <- // Si la batería del auxiliar es menor que 50, voy al puesto de carga
++!batteryState: battery(B) & B <=0 <- // Si se queda sin bateria, manda mensaje
+	.println("SIN BATERIA");
+	.wait(3000);
+	!batteryState.
+
++!batteryState : battery(B) & B < 75 & free <- // Si la batería del auxiliar es menor que 75, voy al puesto de carga
 	-free;
 	.print("Me queda poca batería. Voy al puesto de carga");
 	!at(auxiliar, waitCharger);
@@ -81,18 +85,12 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	+free;
 	!batteryState.
 
-
-+!batteryState: battery(B) & B < 75 & not free<- // Si no estoy libre pero tengo que ir a cargar, dejo vivo el plan
++!batteryState: battery(B) & B < 75 & not free<-  // Si no esta libre deja vivo el plan
 	.print("No estoy libre pero tengo que ir a cargar...");
 	.wait(1000);
 	!batteryState.
 
-+!batteryState: battery(B) & B <=0 <-
-	.println("SIN BATERIA");
-	.wait(3000).
-
-+!batteryState <- 	// Si no tiene por que ir a cargar, dejo el plan vivo
-	.wait(1000);
++!batteryState <- 	// Si no tiene por que ir a cargar, deja el plan vivo
 	!batteryState.
 
 +!comprobarCargadorLibre <- // Comprueba si el cargador esta libre
@@ -121,10 +119,15 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 /*************************   STOCK  *************************************/
 /*************************************************************************/
 
++!actualizarStock: battery(B) & B<=0 <-
+	.println("SIN BATERIA, CANCELANDO actualizarStock").
 
 +!actualizarStock <- // Actualiza la creencia de stockActual con el stock real que está en el entorno
 	-stockActual(L);
 	!iniciarStock.
+
++!actualizarStock: battery(B) & B<=0 <-
+	.println("SIN BATERIA, CANCELANDO actualizarStock").
 
 +!alertaStock: medicStock([]) <-  // Plan que se ejecuta contantemente, comprueba el stock y recorre el stock en busca de medicamentos con bajo stock
 	.wait(1000);
@@ -136,6 +139,10 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 +!alertaStock: true <- // En el caso de que se este yendo a por el stock
 	!alertaStock.
 
+
++!recorrerStock: battery(B) & B<=0 <-
+	.println("SIN BATERIA, CANCELANDO recorrerStock").
+
 +!recorrerStock([[Med,Q]|Cdr]): medicStock(L) <-  //Recorremos la lista en busca de medicamentos que la cantidad sea de menor de 20
     if(Q<=2 & not member(Med,L)){
         -medicStock(L);
@@ -146,7 +153,8 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 +!recorrerStock([]) <- 			// Cuando termine de comprobar la lista
     !hayQueRecoger.
 
-
++!hayQueRecoger: battery(B) & B<=0 <-
+	.println("SIN BATERIA, CANCELANDO hayQueRecoger").
 
 +!hayQueRecoger: battery(B) & B > 0 & medicStock(L) & free <- // Si hay algun medicamento que suministrar y esta libre vamos al delivery a recoger la medicina
 	-free;
@@ -166,18 +174,16 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	}
 	+free.
 
-+!hayQueRecoger: battery(B) & B <=0 <-
-	.println("SIN BATERIA");
-	.wait(3000).
-
 +!hayQueRecoger: medicStock([Car|Cdr]) & not free <- // Si el robot no esta libre, espera y deja vivo el plan
 	.wait(1000);
 	!hayQueRecoger.
 
 +!hayQueRecoger: medicStock([]) <- true. // Si no hay ningun medicamento que reponer o suministrar
 
-
-
++!cogerMedicinaStock: battery(B) & B <=0 <-
+	.println("SIN BATERIA, CANCELANDO cogerMedicinaStock");
+	.wait(3000).
+	
 +!cogerMedicinaStock: battery(B) & B > 0 & medicStock([Med|Cdr]) & medicActual(L)<-  // Cogemos toda la medicina en medicStock y la ponemos en medicActual
 	.println("Cogiendo ", Med);
 	!consumo(2);							// Cuando coge la medicina del delivery gasta 2 de energia
@@ -187,23 +193,18 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	+medicActual([Med|L]);
 	!cogerMedicinaStock.
 
-+!cogerMedicinaStock: battery(B) & B <=0 <-
-	.println("SIN BATERIA");
-	.wait(3000).
-
 +!cogerMedicinaStock: medicStock([]) <-  // Cuando hemos cogido toda la medicina
 	.println("Todos los medicamentos recogidos").
 
++!addStock: battery(B) & B <=0 <-
+	.println("SIN BATERIA, CANCELANDO cogerMedicinaStock");
+	.wait(3000).
 
 +!addStock([Med|MedL]) : battery(B) & B > 0 <-  // Dejamos la medicina en el kit
 	!consumo(1);
 	.println("Reponiendo" , Med);
 	reponerStock(Med);
 	!addStock(MedL).
-
-+!addStock: battery(B) & B <=0 <-
-	.println("SIN BATERIA");
-	.wait(3000).
 
 +!addStock([]) <- // Cuando hemos dejado toda la medicina en el kit
 	.println("Todo el stock repuesto");
@@ -213,6 +214,10 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 /*************************************************************************/
 /*************************  CADUCIDAD  ***********************************/
 /*************************************************************************/
+
++!reponerMedicinas: battery(B) & B <=0 <-
+	.println("SIN BATERIA, CANCELANDO cogerMedicinaStock");
+	.wait(3000).
 
 +!reponerMedicinas : battery(B) & B > 0 & medicRep(Med) & free <- // Plan basico para el recogimiento de medicinas por caducidad
 	-free;
@@ -236,12 +241,12 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	}
 	+free.
 	
-+!reponerMedicinas: battery(B) & B <=0 <-
-	.println("SIN BATERIA");
-	.wait(3000).
-
 +!reponerMedicinas: not free <- // Si el auxiliar no está libre, mantiene vivo el plan
 	!reponerMedicinas. 
+
++!reponerMedicinas: battery(B) & B <=0 <-
+	.println("SIN BATERIA, CANCELANDO reponerMedicina");
+	.wait(3000).
 
 +!reponerMedicina(Medicina): medicRep([]) & free <- // Si el robot esta libre, y no tiene que recoger otra medicina, añade a la lista medicRep y llama a reponerMedicinas
 	.println("Estoy libre, va a caducar la primera medicina: ",Medicina);
@@ -268,6 +273,10 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	-medicRep(_);
 	+medicRep([Medicina|L]).
 
++!cogerMedicina: battery(B) & B <=0 <-
+	.println("SIN BATERIA, CANCELANDO cogerMedicina");
+	.wait(3000).
+
 +!cogerMedicina([Med|MedL]): medicActual(L) <- // Coge la medicina del delivery
 	.println("Cogiendo ", Med);
 	!consumo(2);							// Cuando coge la medicina del delivery gasta 2 de energia
@@ -279,8 +288,12 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	.println("Todos los medicamentos recogidos").
 
 
++!actualizarMedicina: battery(B) & B <=0 <-
+	.println("SIN BATERIA, CANCELANDO actualizarMedicina");
+	.wait(3000).
 
 +!actualizarMedicina([Med|MedL]) : battery(B) & B > 0 <-  // Repone todas las medicinas y actualiza caducidades de los demas agentes
+	!consumo(2); 
 	.println("Reponiendo medicina, ",Med);
 	.findall(caducidad(Med,Y), caducidad(Med,Y), U);
 	.send(owner, untell, caducidad(Med,Y));
@@ -288,15 +301,9 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
     .send(enfermera, untell, caducidad(Med,Y));
     .send(owner, tell, U);
     .send(enfermera, tell, U);
-	reponerMedCaducidad(Med);
-	!consumo(2); 								// Cuando deja la medicina gasta 2 de energia
+	reponerMedCaducidad(Med);							
 	!actualizarStock;
 	!actualizarMedicina(MedL).
-
-+!actualizarMedicina: battery(B) & B <=0 <-
-	.println("SIN BATERIA");
-	.wait(3000).
-
 
 +!actualizarMedicina([]) <- 
 	.println("Toda la medicina repuesta");
@@ -345,7 +352,7 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	move_towards(P).
 
 -!go(P): battery(B) & B <= 0 <- 
-	.wait(1000);
+	.wait(3000);
 	.println("¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿BIG ERROR?????????????????");
 	.println("..........I DONT HAVE BATTERY LEFT......").                                                             
 -!go(P) <- 

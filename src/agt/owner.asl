@@ -29,7 +29,7 @@ pauta(aspirina, 50).
 //Muestra la relacion entre la medicina y los segundos que hacen falta para que se caduque
 caducidad(paracetamol, 50).
 caducidad(ibuprofeno, 80).
-caducidad(dalsy, 20).
+caducidad(dalsy, 30).
 caducidad(frenadol, 50).
 caducidad(aspirina, 40).
 

@@ -29,9 +29,9 @@ public class HouseView extends GridWorldView {
 
     @Override
     public void draw(Graphics g, int x, int y, int object) {
-        Location lRobot = hmodel.getAgPos(0);
-		Location lOwner = hmodel.getAgPos(1);
-		Location lAuxiliar = hmodel.getAgPos(3);
+        Location lRobot = hmodel.getAgPos(hmodel.NURSE);
+		Location lOwner = hmodel.getAgPos(hmodel.OWNER);
+		Location lAuxiliar = hmodel.getAgPos(hmodel.AUXILIAR);
 		Location loc  	= new Location(x, y);
 		String objPath = currentDirectory;
 		g.setColor(Color.white);
@@ -145,12 +145,12 @@ public class HouseView extends GridWorldView {
                           
     @Override
     public void drawAgent(Graphics g, int x, int y, Color c, int id) {
-        Location lRobot = hmodel.getAgPos(0);
-        Location lOwner = hmodel.getAgPos(1);
-		Location lAuxiliar = hmodel.getAgPos(3);
+        Location lRobot = hmodel.getAgPos(hmodel.NURSE);
+        Location lOwner = hmodel.getAgPos(hmodel.OWNER);
+		Location lAuxiliar = hmodel.getAgPos(hmodel.AUXILIAR);
 		String objPath = currentDirectory;
 
-		if (id < 1) { 
+		if (id == hmodel.NURSE) { 
             if (!lRobot.equals(lOwner) && !lRobot.equals(hmodel.lFridge)) {
                 c = Color.yellow;
                 objPath = "/doc/bot.png";
@@ -158,7 +158,7 @@ public class HouseView extends GridWorldView {
                 g.setColor(Color.black);
                 super.drawString(g, x, y, defaultFont, "Rob");
             }
-        } else if (id == 3) {
+        } else if (id == hmodel.AUXILIAR) {
 			objPath = "/doc/auxiliar.png";
 					drawImage(g,x,y,objPath);
 		}  else { 
