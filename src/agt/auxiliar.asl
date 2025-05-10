@@ -90,7 +90,7 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	.wait(1000);
 	!batteryState.
 
-+!batteryState <- 	// Si no tiene por que ir a cargar, deja el plan vivo
++!batteryState <- 	// En otro caso sigue vivo el plan
 	!batteryState.
 
 +!comprobarCargadorLibre <- // Comprueba si el cargador esta libre

@@ -112,11 +112,7 @@ contador(0). 	// numero de veces que el auxiliar ha salido de la bateria antes d
 	.wait(1000);
 	!batteryState.
 
-
-+!batteryState : free <- // En otro caso, sigue vivo el plan
-	!batteryState.
-
-+!batteryState  <-
++!batteryState  <- // En otro caso sigue vivo el plan
 	!batteryState.
 
 +!comprobarCargadorLibre <- // Comprueba si el auxiliar esta libre
