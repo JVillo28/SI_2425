@@ -85,7 +85,7 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	+free;
 	!batteryState.
 
-+!batteryState: battery(B) & B < 75 & not free<-  // Si no esta libre deja vivo el plan
++!batteryState: battery(B) & B < 75 & not free <-  // Si no esta libre deja vivo el plan
 	.print("No estoy libre pero tengo que ir a cargar...");
 	.wait(1000);
 	!batteryState.
@@ -248,30 +248,19 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	.println("SIN BATERIA, CANCELANDO reponerMedicina");
 	.wait(3000).
 
-+!reponerMedicina(Medicina): medicRep([]) & free <- // Si el robot esta libre, y no tiene que recoger otra medicina, añade a la lista medicRep y llama a reponerMedicinas
++!reponerMedicina(Medicina): medicRep([])  <- // Si el robot esta libre, y no tiene que recoger otra medicina, añade a la lista medicRep y llama a reponerMedicinas
 	.println("Estoy libre, va a caducar la primera medicina: ",Medicina);
 	-medicRep(_);
 	+medicRep([Medicina]);
 	!reponerMedicinas.
 
-+!reponerMedicina(Medicina): not medicRep([]) & free <- // Si no es el primer medicamento que va a caducar, simplemente añade a la lista el medicamento
++!reponerMedicina(Medicina): not medicRep([]) <- // Si no es el primer medicamento que va a caducar, simplemente añade a la lista el medicamento
 	.println("Estoy libre, va a caducar la medicina: ",Medicina);
 	?medicRep(L);
 	-medicRep(_);
 	+medicRep([Medicina|L]).
   
-+!reponerMedicina(Medicina): medicRep([]) & not free <- // Si no esta libre y es el primero, añade a la lista y llama al plan
-	.println("Esperando a estar libre para ir a reponer la medicina",Medicina);
-	-medicRep(_);
-	+medicRep([Medicina]);
-	.wait(1000);
-	!reponerMedicinas.
 
-+!reponerMedicina(Medicina): not medicRep([]) & not free <- // Sino es el primero y no esta libre simplemente añade a la lista el medicamento
-	.println("Añadiendo medicina:",Medicina," a la lista de reposicion");
-	?medicRep(L);
-	-medicRep(_);
-	+medicRep([Medicina|L]).
 
 +!cogerMedicina: battery(B) & B <=0 <-
 	.println("SIN BATERIA, CANCELANDO cogerMedicina");

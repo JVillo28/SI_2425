@@ -30,7 +30,7 @@ pauta(aspirina, 50).
 caducidad(paracetamol, 50).
 caducidad(ibuprofeno, 80).
 caducidad(dalsy, 30).
-caducidad(frenadol, 50).
+caducidad(frenadol, 60).
 caducidad(aspirina, 40).
 
 medicPend([]). // Donde vamos a manejar los medicamentos que tiene que tomar owner
