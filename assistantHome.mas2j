@@ -17,8 +17,6 @@ MAS assistantHome {
     agents: enfermera robot.asl;
 			auxiliar;
             owner; 
-			//guest owner.asl;
-            repartidor supermarket.asl;
 
     aslSourcePath: "src/agt";
 }
