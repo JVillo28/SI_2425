@@ -81,7 +81,6 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	-free;
 	.print("Me queda poca batería. Voy al puesto de carga");
 	!at(enfermera, waitCharger);
-	
 	!comprobarCargadorLibre;
 	
 	while(.belief(at(auxiliar,charger))){
@@ -168,8 +167,8 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
     !tomarMedicina.
 
 +!aPorMedicina(Medicina,H,M,S): free[source(self)]<-
+		-free[source(self)];
 		.println("A por medicina");
-    	-free[source(self)];
 		!at(enfermera, kit);
 		.send(owner,achieve,cancelarMedicacion);
 		if(not .belief(open(kit))){
@@ -247,26 +246,26 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 /******************** COMPROBAR MEDICINA TOMADA **************************/
 /*************************************************************************/
 
-+!cancelarMedicacion: free[source(self)] <-
++!cancelarMedicacion: free <-
 	.print("Me prohiben ir a por la medicacion, estoy libre");
 	!comprobarTomaOwner.
 
-+!cancelarMedicacion: not free[source(self)] & medicActual([])  <-
++!cancelarMedicacion: not free & medicActual([])  <-
 	.print("Me prohiben ir a por la medicacion");
 	.drop_intention(aPorMedicina(_,_,_,_));
 	+free;
 	!comprobarTomaOwner.
 
-+!cancelarMedicacion: not free[source(self)] & not medicActual([]) <-
++!cancelarMedicacion: not free& not medicActual([]) <-
 	.print("Me prohiben ir a por la medicacion pero tengo medicina que entregar al owner");
 	!comprobarTomaOwner.
 
-+!comprobarTomaOwner: not free[source(self)] <- 
++!comprobarTomaOwner: not free <- 
 	.println("Esperando a estar libre para comprobar que el owner se ha tomado la medicacion...");
 	.wait(1000);
 	!comprobarTomaOwner.
 
-+!comprobarTomaOwner: free[source(self)] <- 
++!comprobarTomaOwner: free <- 
 	-free;
 	.println("El owner ha cogido la medicina, comprobando si se la ha tomado...");
 	!at(enfermera,kit);
@@ -298,24 +297,17 @@ medicActual([]). // Donde vamos a manejar los medicamentos que lleva el robot ac
 	
 
 +!comprobarMedicina(MedicinaTomada,[[_,_]|Cdr1]) <-
-	!comprobarMedicina(MedicinaTomada,Cdr1).
-
-
-+!comprobarStockMedicina(MedicinaTomada,Q1,[[MedicinaTomada,Q2]|Cdr]) <- 
-	.wait(1000);
-	if (Q1 < Q2){
+	!comprobarMedicina(MedicinaTomada,Cdr1);
+	if(Q1 < Q2){
 		.print("Owner se ha tomado medicina ",MedicinaTomada);
 	}else{
 		.print("AVISO! Owner no se ha tomado  ", MedicinaTomada);
-	}
-	.wait(500).
+	}.
 
 +!comprobarStockMedicina(MedicinaTomada,Q1,[[_,_]|Cdr]) <- 
-	.wait(1000);
 	!comprobarStockMedicina(MedicinaTomada,Q1,Cdr).
 
 +!comprobarStockMedicina(MedicinaTomada,Q1,[]) <- 
-	.wait(1000);
 	.print("AVISO! Owner no se ha tomado  ", MedicinaTomada).
 
 +!medicinaRecibida(L) <- 

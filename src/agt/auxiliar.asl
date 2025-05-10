@@ -20,7 +20,7 @@ connect(livingroom, hall, doorSal1).
 connect(hallway, livingroom, doorSal2).       
 connect(livingroom, hallway, doorSal2).   
 
-battery(2). 	// numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
+battery(288). 	// numero de casillas. Lo máximo que podría tener que recorrer andaría en unas 40 tirando por lo alto.
 batteryMax(288).// bateria maxima que tiene el auxiliar disponible. Es de la que dispone al inicio
 contador(0). 	// numero de veces que el auxiliar ha salido de la bateria antes de tiempo
 free. 			//muestra si el auxiliar está libre de acciones que realizar
@@ -62,7 +62,7 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	-battery(B);
 	+battery(B-X).
 
-+!batteryState : battery(B) & B < 50 & free <- // Si la batería del auxiliar es menor que 50, voy al puesto de carga
++!batteryState : battery(B) & B < 75 & free <- // Si la batería del auxiliar es menor que 50, voy al puesto de carga
 	-free;
 	.print("Me queda poca batería. Voy al puesto de carga");
 	!at(auxiliar, waitCharger);
@@ -82,7 +82,7 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	!batteryState.
 
 
-+!batteryState: battery(B) & B < 50 & not free<- // Si no estoy libre pero tengo que ir a cargar, dejo vivo el plan
++!batteryState: battery(B) & B < 75 & not free<- // Si no estoy libre pero tengo que ir a cargar, dejo vivo el plan
 	.print("No estoy libre pero tengo que ir a cargar...");
 	.wait(1000);
 	!batteryState.

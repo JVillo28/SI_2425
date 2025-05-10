@@ -19,16 +19,17 @@ connect(hallway,livingroom, doorSal2).
 connect(livingroom, hallway, doorSal2).
 
 /*Initial prescription beliefs*/
+//Pautas iniciales de las que dispone el owner, medicamento y tiempo en segundos para su siguiente toma
 pauta(paracetamol, 25). 
 pauta(ibuprofeno, 30). 
 pauta(dalsy, 25). 
 pauta(frenadol, 40). 
 pauta(aspirina, 50).
 
-//Caducidades
+//Muestra la relacion entre la medicina y los segundos que hacen falta para que se caduque
 caducidad(paracetamol, 50).
 caducidad(ibuprofeno, 80).
-caducidad(dalsy, 40).
+caducidad(dalsy, 20).
 caducidad(frenadol, 50).
 caducidad(aspirina, 40).
 
@@ -45,7 +46,7 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 /*************************  INICIALIZACIÓN  ******************************/
 /*************************************************************************/
 
-+!send_pauta : true  <-
++!send_pauta : true  <- // envia la informacion necesaria a los robots para su ejecución
 	.findall(pauta(X,Y), pauta(X,Y), L);
 	.findall(caducidad(X,Y), caducidad(X,Y), U);
 	.print("Mi pauta: ", L);
@@ -56,7 +57,7 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	.send(auxiliar,achieve,inicia);
 	!inicia.
 
-+!inicia : true <- 
++!inicia : true <- // Inicia la ejecución del agente. Crea las creencias necesarias y empieza a contar la caducidad
     .print("Iniciando recordatorios de medicamentos...");
     .time(H, M, S);
     .findall(consumo(X,T,H,M,S), pauta(X,T), L);
@@ -65,14 +66,14 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
     !iniciarContadores(L);
     !tomarMedicina.
 
-+!iniciarCaducidad([caducidad(X,_)|Cdr]) <-
++!iniciarCaducidad([caducidad(X,_)|Cdr]) <- // Empieza el contador de caducidades
 	!!contadorCaducidad(X);
 	!iniciarCaducidad(Cdr).
 
 +!iniciarCaducidad([]) <- 
 	.print("Iniciacion de la caducidad completada").
 
-+!iniciarContadores([consumo(Medicina,T,H,M,S)|Cdr]) <-
++!iniciarContadores([consumo(Medicina,T,H,M,S)|Cdr]) <- // Crea las creencias de consumo, las que marcan cuando se debe tomar el owner la medicacion
     if(S+T>=60){ 
 		+consumo(Medicina,T,H,M+1,S+T-60);
 		.print(consumo(Medicina,T,H,M+1,S+T-60));	
@@ -84,8 +85,8 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
     !iniciarContadores(Cdr).
 +!iniciarContadores([]) <- .print("Inicialización completada").
 
-+!contadorCaducidad(M) : caducidad(M, T) & not pedidoReposicion(M) <- 
-    if(T<15){
++!contadorCaducidad(M) : caducidad(M, T) & not pedidoReposicion(M) <-  // Plan que se ejecuta contantemente para la comprobacion de caducidades
+    if(T<15){ // Si el tiempo es menor de 15 manda al auxicojaliar que  reponga la medicina.
         .send(auxiliar, achieve, reponerMedicina(M));
         +pedidoReposicion(M);  // Marcar que ya se pidió
     } 
@@ -102,17 +103,17 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
     .print("Caducidad de ", M, " : ", T);
     !contadorCaducidad(M).
 
-+!cancelarPedido(M) <-
++!cancelarPedido(M) <- // Elimina la creencia de pedido reposicion para la medicina M, repuesta por el auxiliar
 	-pedidoReposicion(M).
 
-+!addPauta(pauta(Medicacion,Tiempo)) <-
++!addPauta(pauta(Medicacion,Tiempo)) <- // Añade dinamicamente una pauta definida por el usuario
 	.println("Se me ha añadido la pauta: ",Medicacion," tiempo: ",Tiempo);
 	.time(H,M,S);
 	.send(enfermera,achieve,addPauta(pauta(Medicacion,Tiempo)));
 	+pauta(Medicacion,Tiempo);
 	+consumo(Medicacion,Tiempo,H,M,S).
 
-+!deletePauta(pauta(Medicacion,_)) <-
++!deletePauta(pauta(Medicacion,_)) <- // Elimina dinamicamente una pauta.
 	.println("Se ha eliminado la pauta: ",Medicacion);
 	.time(H,M,S);
 	.send(enfermera,achieve,deletePauta(pauta(Medicacion,_)));
@@ -122,22 +123,22 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 /*************************************************************************/
 /**********************  MOVIMIENTO ALEATORIO  ***************************/
 /*************************************************************************/
-
-+!aMiBola <- 
+ 
++!aMiBola <-  // Movimiento aleatorio princiapk del owner, realiza sit hasta que se espera un tiempo aleatorio, posteriormente va a por la medicina
    	!!sit;
 	.random(X); .wait(X*10000+2000);
    	.print("Voy yo a por la medicina");
 	!goToMedicina.
 	
-+!goToMedicina: busy <-
++!goToMedicina: busy <- // El owner va a por la medicina aunque este ejecutando el plan sit
 	 .println("Estoy ocupado pero voy a por la medicina igual");
 	 .drop_desire(sit);
 	 -busy;
 	 !aPorMedicina;
 	 !aMiBola.
 
-+!goToMedicina: not busy <-
-	 .println("No estoy ocupado voy a por la medicina");
++!goToMedicina: not busy <- // Si el owner no esta ocupado va a por la medicina y psoteriormente realiza el movimiento aleatorio
+	 .println("No estoy ocupado voy a por la medicina"); 
 	 !aPorMedicina;
 	 !aMiBola.
 
@@ -145,6 +146,7 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 /**********************   IR A POR MEDICINA  *****************************/
 /*************************************************************************/
 
+// Plan que comprueba si es hora de ir a por la medicina, cuando el tiempo de tomar la medicina es dentro de 7 segundos se activa y la añada a la lista
 +!tomarMedicina: pauta(Medicina,T) & consumo(Medicina,T,H,M,S) & .time(H,MM,SS) & ((MM == M & 7 >= S-SS ) | (M == MM+1 & S<7 & 7 >= (60-SS)+(S)))  & medicPend(Med) <- // Funciona por que S siempre es anterior
 	.println("Me debo tomar ",Medicina, " a las: ",H,":",M,":",S);
 	!addMedicina(Medicina);
@@ -159,11 +161,11 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
     !tomarMedicina.
 
 
-+!tomarMedicina <- 
++!tomarMedicina <- // Mantiene el plan vivo mientras no tenga que ir a por la medicina
     .wait(10);
     !tomarMedicina.
 
-+!aPorMedicina: not busy  <-
++!aPorMedicina: not busy  <- // Va por la medicina en medicPend, la coge toda y se la toma.
 	+busy;
 	!at(owner, kit);
 	.send(enfermera,achieve,cancelarMedicacion);
@@ -181,30 +183,32 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	!enviarMedicinaPendiente;
 	-busy.
 
++!aPorMedicina: busy <- // Si esta coupado mantiene vivo el plan
+	true.
 
-+!cancelarMedicacion: busy & .desire(aPorMedicina) <-
++!cancelarMedicacion: busy & .desire(aPorMedicina) <- // Si el owner estaba llendo a por la medicina y el robot llega antes, este para la accion
 	.print("Me prohiben ir a por la medicacion, estaba yendo a por ella");
 	.drop_desire(aPorMedicina);
 	-busy;
 	!aMiBola.
 
-+!cancelarMedicacion <-
++!cancelarMedicacion <- // Plan alternativo por si el robot manda la accion de cancelarMedicacion pero el owner no estaba yendo.
 	.print("Me prohiben ir a por la medicacion y no estaba yendo yo").
 
-+!enviarMedicinaPendiente: medicPend(L) <-
++!enviarMedicinaPendiente: medicPend(L) <- // Envia la actualizacion de medicinasPendientes al robot
 	.send(enfermera,achieve,medicinaRecibida(L)).
 
-+!consumirMedicina: medicActualOwner([Car|Cdr]) <-
++!consumirMedicina: medicActualOwner([Car|Cdr]) <- // Consume la medicina Car y actualiza la lista medicActualOwner
 	.println("Tomando ", Car);
 	-medicActualOwner(_);
 	+medicActualOwner(Cdr);
 	!consumirMedicina.
 
-+!consumirMedicina: medicActualOwner([]) <-
++!consumirMedicina: medicActualOwner([]) <- 
 	.println("Me he tomado toda la medicina").	
 
 
-+!cogerTodaMedicina([Car|Cdr]) <-
++!cogerTodaMedicina([Car|Cdr]) <- // Coge las medicinas del kit 
 		.println("Cojo la medicina ",Car);
 		getMedicina(Car);
 		.belief(medicActualOwner(L));
@@ -212,16 +216,16 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 		+medicActualOwner([Car|L]);
 		!cogerTodaMedicina(Cdr).
 
-+!cogerTodaMedicina([]): medicActualOwner(L) <-
++!cogerTodaMedicina([]): medicActualOwner(L) <- // Cuando ha cogido todas las medicinas, envia a la enfermera las medicinas que ha tomado
 		.println("He cogido toda la medicina");
 		.send(enfermera,tell,medicActualOwner(L)).
 
-+!medicinaRecibida(L) <- 
++!medicinaRecibida(L) <- // Actualiza la lista de medPend cuando el robot le ha suministrado medicinas
 	.println("Medicamentos actualizados");
 	-medicPend(_);
 	+medicPend(L).
 
-+!addMedicina(Medicina): medicPend(Med) <-
++!addMedicina(Medicina): medicPend(Med) <- // Añade la medicina Medicina a la lista medicPend
 	.concat(Med,[Medicina],L);
 	-medicPend(_);
 	+medicPend(L).
