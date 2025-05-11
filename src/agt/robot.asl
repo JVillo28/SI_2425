@@ -213,9 +213,10 @@ contador(0). 	// numero de veces que el auxiliar ha salido de la bateria antes d
 +!comprobarHora([Med|MedL],H,M,S) <-  // Va hacia el owner, mientras no sea la hora perfecta para tomarse la medicina, la enfermera sigue al owner
 		!at(enfermera, owner);	
 		.time(HH,MM,SS);
-		if(SS<S) {    
+		if((HH < H) | (HH == H & MM < M) | (HH == H & MM == M & SS < S)) {
 			.print("Esperando a la hora perfecta... Hora perfecta: ",H,":",M,":",S);
 			.print("Esperando en hora actual: ",HH,":",MM,":",SS);
+			.wait(500);
 			!comprobarHora([Med|MedL],H,M,S);
      	}else{
 			!darMedicina([Med|MedL],H,M,S);

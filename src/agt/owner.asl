@@ -22,7 +22,7 @@ connect(livingroom, hallway, doorSal2).
 //Pautas iniciales de las que dispone el owner, medicamento y tiempo en segundos para su siguiente toma
 pauta(paracetamol, 60). 
 pauta(ibuprofeno, 30). 
-pauta(dalsy, 25). 
+pauta(dalsy, 34). 
 pauta(frenadol, 40). 
 pauta(aspirina, 50).
 
