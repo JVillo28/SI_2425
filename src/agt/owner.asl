@@ -38,7 +38,7 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 
 /* Initial goals */
 
-!send_pauta.
+!inicia.
 
 !aMiBola.
 
@@ -51,12 +51,12 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
     .time(H, M, S);
     .findall(consumo(X,T,H,M,S), pauta(X,T), L);
 	.findall(caducidad(X,Y), caducidad(X,Y), U);
+	!sendPauta;
 	!iniciarCaducidad(U);
     !iniciarContadores(L);
-	!send_pauta;
     !tomarMedicina.
 
-+!send_pauta : true  <- // envia la informacion necesaria a los robots para su ejecución
++!sendPauta : true  <- // envia la informacion necesaria a los robots para su ejecución
 	.findall(pauta(X,Y), pauta(X,Y), L);
 	.findall(caducidad(X,Y), caducidad(X,Y), U);
 	.print("Mi pauta: ", L);
