@@ -165,7 +165,7 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
     .wait(10);
     !tomarMedicina.
 
-+!aPorMedicina: not busy  <- // Va por la medicina en medicPend, la coge toda y se la toma.
++!aPorMedicina  <- // Va por la medicina en medicPend, la coge toda y se la toma.
 	+busy;
 	!at(owner, kit);
 	.send(enfermera,achieve,cancelarMedicacion);
@@ -183,8 +183,6 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	!enviarMedicinaPendiente;
 	-busy.
 
-+!aPorMedicina: busy <- // Si esta coupado mantiene vivo el plan
-	true.
 
 +!cancelarMedicacion: busy & .desire(aPorMedicina) <- // Si el owner estaba llendo a por la medicina y el robot llega antes, este para la accion
 	.print("Me prohiben ir a por la medicacion, estaba yendo a por ella");
@@ -198,15 +196,6 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 +!enviarMedicinaPendiente: medicPend(L) <- // Envia la actualizacion de medicinasPendientes al robot
 	.send(enfermera,achieve,medicinaRecibida(L)).
 
-+!consumirMedicina: medicActualOwner([Car|Cdr]) <- // Consume la medicina Car y actualiza la lista medicActualOwner
-	.println("Tomando ", Car);
-	-medicActualOwner(_);
-	+medicActualOwner(Cdr);
-	!consumirMedicina.
-
-+!consumirMedicina: medicActualOwner([]) <- 
-	.println("Me he tomado toda la medicina").	
-
 
 +!cogerTodaMedicina([Car|Cdr]) <- // Coge las medicinas del kit 
 		.println("Cojo la medicina ",Car);
@@ -219,6 +208,17 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 +!cogerTodaMedicina([]): medicActualOwner(L) <- // Cuando ha cogido todas las medicinas, envia a la enfermera las medicinas que ha tomado
 		.println("He cogido toda la medicina");
 		.send(enfermera,tell,medicActualOwner(L)).
+
++!consumirMedicina: medicActualOwner([Car|Cdr]) <- // Consume la medicina Car y actualiza la lista medicActualOwner
+	.println("Tomando ", Car);
+	-medicActualOwner(_);
+	+medicActualOwner(Cdr);
+	!consumirMedicina.
+
++!consumirMedicina: medicActualOwner([]) <- 
+	.println("Me he tomado toda la medicina").	
+
+
 
 +!medicinaRecibida(L) <- // Actualiza la lista de medPend cuando el robot le ha suministrado medicinas
 	.println("Medicamentos actualizados");

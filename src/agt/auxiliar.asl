@@ -201,7 +201,7 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 	.wait(3000).
 
 +!addStock([Med|MedL]) : battery(B) & B > 0 <-  // Dejamos la medicina en el kit
-	!consumo(1);
+	!consumo(2);
 	.println("Reponiendo" , Med);
 	reponerStock(Med);
 	!addStock(MedL).
