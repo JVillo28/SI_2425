@@ -156,7 +156,7 @@ medicStock([]). // Lista de medicinas que tenemos que reponer por cantidad de me
 +!hayQueRecoger: battery(B) & B<=0 <-
 	.println("SIN BATERIA, CANCELANDO hayQueRecoger").
 
-+!hayQueRecoger: battery(B) & B > 0 & medicStock(L) & free <- // Si hay algun medicamento que suministrar y esta libre vamos al delivery a recoger la medicina
++!hayQueRecoger: battery(B) & B > 0 & medicStock([Car|Cdr]) & free <- // Si hay algun medicamento que suministrar y esta libre vamos al delivery a recoger la medicina
 	-free;
     .println("Yendo a reponer stock");
     !at(auxiliar, delivery);
