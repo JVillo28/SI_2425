@@ -349,7 +349,7 @@ contador(0). 	// numero de veces que el auxiliar ha salido de la bateria antes d
 	!comprobarStockMedicina(MedicinaTomada,Q1,Cdr).
 
 +!comprobarStockMedicina(MedicinaTomada,Q1,[]) <- 
-	.print("AVISO! Owner no se ha tomado  ", MedicinaTomada).
+	true.
 
 +!medicinaRecibida(_,_): battery(B) & B<=0 <-
 	.println("SIN BATERIA, CANCELANDO medicinaRecibida").

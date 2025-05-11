@@ -20,7 +20,7 @@ connect(livingroom, hallway, doorSal2).
 
 /*Initial prescription beliefs*/
 //Pautas iniciales de las que dispone el owner, medicamento y tiempo en segundos para su siguiente toma
-pauta(paracetamol, 25). 
+pauta(paracetamol, 60). 
 pauta(ibuprofeno, 30). 
 pauta(dalsy, 25). 
 pauta(frenadol, 40). 
@@ -127,7 +127,7 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
  
 +!aMiBola <-  // Movimiento aleatorio princiapk del owner, realiza sit hasta que se espera un tiempo aleatorio, posteriormente va a por la medicina
    	!!sit;
-	.random(X); .wait(X*10000+2000);
+	.random(X); .wait(X*5000+10000);
    	.print("Voy yo a por la medicina");
 	!goToMedicina.
 	
