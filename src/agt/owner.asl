@@ -46,6 +46,16 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 /*************************  INICIALIZACIÓN  ******************************/
 /*************************************************************************/
 
++!inicia : true <- // Inicia la ejecución del agente. Crea las creencias necesarias y empieza a contar la caducidad
+    .print("Iniciando recordatorios de medicamentos...");
+    .time(H, M, S);
+    .findall(consumo(X,T,H,M,S), pauta(X,T), L);
+	.findall(caducidad(X,Y), caducidad(X,Y), U);
+	!iniciarCaducidad(U);
+    !iniciarContadores(L);
+	!send_pauta;
+    !tomarMedicina.
+
 +!send_pauta : true  <- // envia la informacion necesaria a los robots para su ejecución
 	.findall(pauta(X,Y), pauta(X,Y), L);
 	.findall(caducidad(X,Y), caducidad(X,Y), U);
@@ -54,17 +64,8 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 	.send(enfermera, tell, U);
 	.send(auxiliar, tell, U);
 	.send(enfermera,achieve,inicia);
-	.send(auxiliar,achieve,inicia);
-	!inicia.
+	.send(auxiliar,achieve,inicia).
 
-+!inicia : true <- // Inicia la ejecución del agente. Crea las creencias necesarias y empieza a contar la caducidad
-    .print("Iniciando recordatorios de medicamentos...");
-    .time(H, M, S);
-    .findall(consumo(X,T,H,M,S), pauta(X,T), L);
-	.findall(caducidad(X,Y), caducidad(X,Y), U);
-	!iniciarCaducidad(U);
-    !iniciarContadores(L);
-    !tomarMedicina.
 
 +!iniciarCaducidad([caducidad(X,_)|Cdr]) <- // Empieza el contador de caducidades
 	!!contadorCaducidad(X);
@@ -198,16 +199,16 @@ medicActualOwner([]). // Donde vamos a manejar los medicamentos que tiene el own
 
 
 +!cogerTodaMedicina([Car|Cdr]) <- // Coge las medicinas del kit 
-		.println("Cojo la medicina ",Car);
-		getMedicina(Car);
-		.belief(medicActualOwner(L));
-		-medicActualOwner(_);
-		+medicActualOwner([Car|L]);
-		!cogerTodaMedicina(Cdr).
+	.println("Cojo la medicina ",Car);
+	getMedicina(Car);
+	.belief(medicActualOwner(L));
+	-medicActualOwner(_);
+	+medicActualOwner([Car|L]);
+	!cogerTodaMedicina(Cdr).
 
 +!cogerTodaMedicina([]): medicActualOwner(L) <- // Cuando ha cogido todas las medicinas, envia a la enfermera las medicinas que ha tomado
-		.println("He cogido toda la medicina");
-		.send(enfermera,tell,medicActualOwner(L)).
+	.println("He cogido toda la medicina");
+	.send(enfermera,tell,medicActualOwner(L)).
 
 +!consumirMedicina: medicActualOwner([Car|Cdr]) <- // Consume la medicina Car y actualiza la lista medicActualOwner
 	.println("Tomando ", Car);
